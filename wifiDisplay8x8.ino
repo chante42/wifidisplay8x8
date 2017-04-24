@@ -31,15 +31,17 @@ MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
 unsigned long lastMoved = 0;
 unsigned long MOVE_INTERVAL = 30;  // mS
 int  messageOffset;
+#define MAXLENMESSAGE  200
 
 //WiFiServer server(80);
 ESP8266WebServer server(80);
 
-char  message [200] = "Olivier Chanteloup 2017/04/24  eé eè aà";
+char  message [MAXLENMESSAGE] = "Olivier Chanteloup 2017/04/24  eé eè aà";
 
 String getHtmlPageHeader() {
   String  page   = "<html lang='fr'>";
           page  += "<head>";
+          page  +=    "<meta charset='UTF-8'>";
           page  +=    "<title> Afficher LED</title>";
           page  +=    "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }</style>";
           page  += "</head>";
@@ -49,7 +51,7 @@ String getHtmlPageHeader() {
               
 String getHtmlPageMiddle() {
   String  page  =     "<form action='/submit' method='POST'>";
-          page  +=      "<p>MEssage a afficher:</p><input type='text' name='message'><br>";
+          page  +=      "<p>Message à afficher:</p><input type='text' name='message'><br>";
           page  +=      "<input type='submit' value='Submit'><br>";
           page  +=    "</form>";
   return page;
@@ -88,6 +90,9 @@ void setup (){
   Serial.println("WiFi connected");  
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  strncpy(message,"ip: ", MAXLENMESSAGE -1);
+  strncat(message, WiFi.localIP().toString().c_str(), MAXLENMESSAGE -1);
+  message[MAXLENMESSAGE -2] = 0;
 
   server.on("/", handleRootPage);
   server.on("/submit", handleSubmitPage);
@@ -127,9 +132,9 @@ void handleSubmitPage(){
       } //fin if
    } // fin for
   } // fin if
-  String tmp = "<p>message :'"+ String(message)+"' envoye</p><br>";
+  String tmp = "<p>message :'"+ String(message)+"' envoyé</p><br>";
   
-   server.send(200, "text/html", getHtmlPageHeader() +getHtmlPageFooter());
+   server.send(200, "text/html", getHtmlPageHeader()+ tmp +getHtmlPageFooter());
 
 }
 
