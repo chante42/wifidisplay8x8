@@ -4,7 +4,7 @@
 
 // Scrolls a pixel at a time.
 // https://github.com/nickgammon/bitBangedSPI
-// https://github.com/SensorsIot/MAX7219-4-digit-display-Library-for-ESP8266-
+// https://github.com/SensorsIot/MAX7219-4-digit-display-Library-for-ESP8266-/tree/master/MAX7219_Dot_MatrixESP-master
 
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -14,7 +14,7 @@
 #include <bitBangedSPI.h>
 #include <MAX7219_Dot_Matrix.h>
 
-const byte NbMax7219 = 4;
+const byte NbMax7219 = 8;
 const char* ssid = "Bbox-0E7760"; // put your router name
 const char* password = "n0uswifi12";// put your password 
  
@@ -30,6 +30,7 @@ MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
 
 unsigned long lastMoved = 0;
 unsigned long MOVE_INTERVAL = 30;  // mS
+unsigned int Luminosite = 15;
 int  messageOffset;
 #define MAXLENMESSAGE  200
 
@@ -50,8 +51,10 @@ String getHtmlPageHeader() {
 }
               
 String getHtmlPageMiddle() {
-  String  page  =     "<form action='/submit' method='POST'>";
+  String  page  =     "<form action='/submit' method='GET'>";
           page  +=      "<p>Message à afficher:</p><input type='text' name='message'><br>";
+          page  +=      "<p>Vitesse:</p><input type='text' name='vitesse'><br>";          
+          page  +=      "<p>Luminositée</p><input type='text' name='luminosite'><br>";          
           page  +=      "<input type='submit' value='Submit'><br>";
           page  +=    "</form>";
   return page;
@@ -124,17 +127,36 @@ void handleRootPage(){
 // Page envoyer lors GET Submit
 //
 void handleSubmitPage(){
+  String tmp = "";
   if (server.args() > 0 ) {
     for ( uint8_t i = 0; i < server.args(); i++ ) {
-      if (server.argName(i) == "message") {
+      if (server.argName(i) == "message" and server.arg("message") != "") {
          // do something here with value from server.arg(i);
          server.arg("message").toCharArray(message, server.arg("message").length()+1);
+         Serial.println("message : ");  
+         Serial.println(message);
+         tmp += "<p>message :'"+ String(message)+"' envoyé</p><br>";
       } //fin if
+      if (server.argName(i) == "vitesse" and server.arg("vitesse") != "" ) {
+        MOVE_INTERVAL = atoi(server.arg("vitesse").c_str());
+        tmp += "<p>vitesse :'"+ String(server.arg("vitesse"))+"' envoyé</p><br>";
+      } //fin if vitesse
+      if (server.argName(i) == "luminosite" and server.arg("luminosite") != "" ) {
+        Luminosite  = atoi(server.arg("luminosite").c_str());
+        tmp += "<p>luminosité :'"+ String(server.arg("luminosite"))+"' envoyé</p><br>";
+        if (Luminosite >=0 and Luminosite <= 15) {
+          display.setIntensity (Luminosite);
+        } // fin if 
+        else {
+          Luminosite = 5;
+        }
+      }// fin if luminosite
    } // fin for
+   tmp += "<hr><br>";
   } // fin if
-  String tmp = "<p>message :'"+ String(message)+"' envoyé</p><br>";
   
-   server.send(200, "text/html", getHtmlPageHeader()+ tmp +getHtmlPageFooter());
+  
+   server.send(200, "text/html", getHtmlPageHeader()+ tmp +getHtmlPageMiddle() +getHtmlPageFooter());
 
 }
 
