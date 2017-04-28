@@ -72,6 +72,8 @@ String getHtmlPageFooter() {
 void setup (){
   display.begin ();
 
+  strncpy(message,"get IP ....", MAXLENMESSAGE -1);
+  updateDisplay();
   Serial.begin(115200);
   delay(100);
   
@@ -135,6 +137,34 @@ void handleSubmitPage(){
          server.arg("message").toCharArray(message, server.arg("message").length()+1);
          Serial.println("message : ");  
          Serial.println(message);
+         for (int j = 0; j < strlen(message); j++) {
+            Serial.print(message[j], DEC);   
+            if (message[j] == 195) {
+              if (message[j+1] == 160) { // à
+                message[j+1] = 133;
+              }
+              else if (message[j+1] == 169) { // é
+                message[j+1] = 130;
+              }
+              else if (message[j+1] == 168) { //è 
+                message[j+1] = 138;
+              }
+              else if (message[j+1] == 167) { // ç
+                message[j+1] = 135;
+              }
+              else if (message[j+1] == 170) { //ê
+                message[j+1] = 136;
+              }
+              strcpy(message + j, message + j +1);
+              
+            } // fin IF 195
+            else if (message[j] == 194) {// °
+              if (message[j+1] == 176) {
+                message[j+1] = 248;
+              }
+              strcpy(message + j, message +j +1);
+            } // fin if 194
+         } // fin FOR 
          tmp += "<p>message :'"+ String(message)+"' envoyé</p><br>";
       } //fin if
       if (server.argName(i) == "vitesse" and server.arg("vitesse") != "" ) {
