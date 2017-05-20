@@ -5,16 +5,18 @@
 // Scrolls a pixel at a time.
 // https://github.com/nickgammon/bitBangedSPI
 // https://github.com/SensorsIot/MAX7219-4-digit-display-Library-for-ESP8266-/tree/master/MAX7219_Dot_MatrixESP-master
-
+// 
+// A explorer pout l'auto config Wifi
+// https://github.com/tzapu/WiFiManager/blob/master/examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>  // This library is already built in to the Arduino IDE
 
 #include <SPI.h>
 #include <bitBangedSPI.h>
-#include <MAX7219_Dot_Matrix.h>
+#include "MAX7219_Dot_Matrix.h"
 
-const byte NbMax7219 = 8;
+const byte NbMax7219 = 12;
 const char* ssid = "Bbox-0E7760"; // put your router name
 const char* password = "n0uswifi12";// put your password 
  
@@ -28,9 +30,21 @@ MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
 // CS :         D4
 // CLK          D5
 
+
+// Capteur de présence
+//
+//  CAPTEUR      NODEMCU
+//  2 (centre)   D6  - - GPIO12
+int PresencePin = D6;
+int PresenceState = LOW;             // we start, assuming no motion detected
+int PresenceVal = 0;  
+
+//
+// Variable Globale
 unsigned long lastMoved = 0;
 unsigned long MOVE_INTERVAL = 30;  // mS
 unsigned int Luminosite = 15;
+unsigned int TimerPresence = 300; // s
 int  messageOffset;
 #define MAXLENMESSAGE  200
 
@@ -55,6 +69,8 @@ String getHtmlPageMiddle() {
           page  +=      "<p>Message à afficher:</p><input type='text' name='message'><br>";
           page  +=      "<p>Vitesse:</p><input type='text' name='vitesse'><br>";          
           page  +=      "<p>Luminositée</p><input type='text' name='luminosite'><br>";          
+          page  +=      "<p>Timer présence</p><input type='text' name='presence'><br>";          
+          page  +=      "<p>font</p><input type='text' name='font'><br>";       
           page  +=      "<input type='submit' value='Submit'><br>";
           page  +=    "</form>";
   return page;
@@ -72,9 +88,9 @@ String getHtmlPageFooter() {
 void setup (){
   display.begin ();
 
-  strncpy(message,"get IP ....", MAXLENMESSAGE -1);
+  strncpy(message,"getIP.......", MAXLENMESSAGE -1);
   updateDisplay();
-  Serial.begin(115200);
+  Serial.begin(9600);
   delay(100);
   
  // We start by connecting to a WiFi network
@@ -103,6 +119,9 @@ void setup (){
   server.on("/submit", handleSubmitPage);
   server.begin();
   Serial.printf("Web server started, open %s in a web browser\n", WiFi.localIP().toString().c_str());
+
+  // initialise le desteteur de présence
+  pinMode(PresencePin, INPUT); 
 }  // end of setup
 
 
@@ -165,28 +184,44 @@ void handleSubmitPage(){
               strcpy(message + j, message +j +1);
             } // fin if 194
          } // fin FOR 
+         tmp += "<hr><br>";
          tmp += "<p>message :'"+ String(message)+"' envoyé</p><br>";
-      } //fin if
+      } //fin if message
+      
       if (server.argName(i) == "vitesse" and server.arg("vitesse") != "" ) {
         MOVE_INTERVAL = atoi(server.arg("vitesse").c_str());
         tmp += "<p>vitesse :'"+ String(server.arg("vitesse"))+"' envoyé</p><br>";
       } //fin if vitesse
+      
+      if (server.argName(i) == "font" and server.arg("font") != "" ) {
+        display.selectFont(atoi(server.arg("font").c_str()));
+        tmp += "<p>font :'"+ String(server.arg("font"))+"' envoyé</p><br>";
+      } //fin if font
+      
       if (server.argName(i) == "luminosite" and server.arg("luminosite") != "" ) {
         Luminosite  = atoi(server.arg("luminosite").c_str());
         tmp += "<p>luminosité :'"+ String(server.arg("luminosite"))+"' envoyé</p><br>";
         if (Luminosite >=0 and Luminosite <= 15) {
+          display.begin ();
           display.setIntensity (Luminosite);
         } // fin if 
+        else if (Luminosite == -1 ) { // Passe en mode eteinte
+          display.end();
+        }
         else {
           Luminosite = 5;
         }
       }// fin if luminosite
+      if (server.argName(i) == "presence" and server.arg("presence") != "" ) {
+        TimerPresence = atoi(server.arg("presence").c_str());
+        tmp += "<p>time presence :'"+ String(server.arg("presence"))+"' envoyé</p><br>";
+      } //fin if presence
    } // fin for
-   tmp += "<hr><br>";
+   
   } // fin if
   
   
-   server.send(200, "text/html", getHtmlPageHeader()+ tmp +getHtmlPageMiddle() +getHtmlPageFooter());
+   server.send(200, "text/html", getHtmlPageHeader()+ getHtmlPageMiddle()+ tmp  +getHtmlPageFooter());
 
 }
 
@@ -200,6 +235,24 @@ void loop () {
     lastMoved = millis ();
   }
 
+  PresenceVal = digitalRead(PresencePin);
+  if (PresenceVal == HIGH) {  
+//   Serial.println("Hight");
+   if (PresenceState == LOW){
+     PresenceState = HIGH; 
+     Serial.println("Motion detected!");
+     Serial.println("PresenceVal = Hight");
+    }
+  }// fin PresenceVal
+  else {
+//    Serial.println("Low");
+    if (PresenceState == HIGH){
+     PresenceState = LOW; 
+     Serial.println("Motion ended!");
+     Serial.println("PresenceVal = Low");
+    }
+  } //fin else presenceVAL
+ 
   // do other stuff here    
   server.handleClient();
   
