@@ -1,9 +1,14 @@
-* 2017/05/21 
+* 2017/05/21
+ - Ajout de la librairie NTP : https://github.com/arduino-libraries/NTPClient
+  -=- Reste a géré le Problème de changement d'heure.
+ - LE capteur de presence ne fonctionne toujours pas
+
+* 2017/05/20 
   - Deplacement des fichiers de la librairie "MAX7219_Dot_MatrixESP-master" en local pour la modifier
   - ajout d'une font dans le fichier MAX7219_Dot_Matrix_font
   		 recupéré https://github.com/d2r2/go-max7219/blob/master/fonts.go
   - ajout des lettres àéèêç par aeeec en attendant de reprendre les caractère
   - ajout de la gestions d'une fonte dans "MAX7219_Dot_Matrix.h" et "MAX7219_Dot_Matrix.cpp"
   		Pas comme je le voulais, mais impossible d'avoir un point sur un const !!!!!
-
   - PRise en compte de la selection de font dans l'interface html 
+
