@@ -1,3 +1,6 @@
+* 2017/05/22
+ - ajout d'une font 5 bit de large et tentative d'inserer dans MAX7219_Dot_Matrix::sendSmooth
+   -> Les caracteres ne sont pas plus sérré ??????????
 * 2017/05/21
  - Ajout de la librairie NTP : https://github.com/arduino-libraries/NTPClient
   -=- Reste a géré le Problème de changement d'heure.

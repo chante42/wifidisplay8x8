@@ -100,9 +100,9 @@ void MAX7219_Dot_Matrix::begin ()
 
   
      // hardware SPI
-    SPI.begin ();
-    SPI.setDataMode(SPI_MODE0);
-    SPI.setClockDivider(SPI_CLOCK_DIV2);
+  SPI.begin ();
+  SPI.setDataMode(SPI_MODE0);
+  SPI.setClockDivider(SPI_CLOCK_DIV2);
      // end of hardware SPI
 
   // repeatedly configure the chips in case they start up in a mode which
@@ -235,6 +235,10 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
           for (byte i = 0; i < 8; i++)
              thisChip [i] = MAX7219_Dot_Matrix_SINCLAIR_font [s [firstByte  + chip - 1]] [i];  
         }
+        else if (NoFont == 2) {
+          for (byte i = 0; i < 5; i++)
+             thisChip [i] = MAX7219_Dot_Matrix_6pix_font [s [firstByte  + chip - 1]] [i];  
+        }
       }
     }  // negative offset
 
@@ -248,6 +252,10 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
         for (byte i = 0; i < 8; i++)
            thisChip [i + 8] = MAX7219_Dot_Matrix_SINCLAIR_font [s [firstByte + chip]] [i];
       } 
+      else if (NoFont == 2) {
+        for (byte i = 0; i < 5; i++)
+           thisChip [i + 8] = MAX7219_Dot_Matrix_6pix_font [s [firstByte + chip]] [i];
+      } 
     }
 
     // get pixels to right of current character in case "pixel" is positive
@@ -260,6 +268,10 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
         else if (NoFont == 1) {
           for (byte i = 0; i < 8; i++)
              thisChip [i + 16] = MAX7219_Dot_Matrix_SINCLAIR_font [s [firstByte + chip + 1]] [i];
+        } 
+        else if (NoFont == 2) {
+          for (byte i = 0; i < 5; i++)
+             thisChip [i + 16] = MAX7219_Dot_Matrix_6pix_font [s [firstByte + chip + 1]] [i];
         } 
       }
     }  // positive offset
