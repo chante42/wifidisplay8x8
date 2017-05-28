@@ -9,6 +9,7 @@
 // NTP Librairir cliente :
 // https://github.com/arduino-libraries/NTPClient
 
+// A explorer la gestion de la consomation electrique
 //
 // A explorer pout l'auto config Wifi
 // https://github.com/tzapu/WiFiManager/blob/master/examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino
@@ -23,12 +24,12 @@
 #include <bitBangedSPI.h>
 #include "MAX7219_Dot_Matrix.h"
 
-const byte NbMax7219 = 12;
+const byte NbMax7219 = 15;
 const char* ssid = "Bbox-0E7760"; // put your router name
 const char* password = "n0uswifi12";// put your password
 
 
-// 12 chips (display modules), hardware SPI with load on D10
+// 15 chips (display modules), hardware SPI with load on D10
 MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
 // MAX7219      NODEMCU
 // VCC          3.3v
@@ -38,7 +39,7 @@ MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
 // CLK          D5
 
 
-// Capteur de présence
+// Capteur de présence ne fonctionne pas
 //
 //  CAPTEUR      NODEMCU
 //  2 (centre)   D6  - - GPIO12
@@ -53,6 +54,14 @@ unsigned long MOVE_INTERVAL = 30;  // mS
 unsigned int Luminosite = 15;
 unsigned int TimerPresence = 300; // s
 int  messageOffset;
+
+//
+// définition de l'etat du montage pour tenté d'economiser de l'énergie
+#define STATE_NORMAL    1
+#define STATE_LOWPOWER  2
+#define STATE_SLEEP     3
+byte GlobalState = STATE_NORMAL;
+
 #define MAXLENMESSAGE  200
 
 //WiFiServer server(80);
@@ -81,7 +90,7 @@ String getHtmlPageMiddle() {
   String  page  =     "<form action='/submit' method='GET'>";
   page  +=      "<p>Message à afficher:</p><input type='text' name='message'><br>";
   page  +=      "<p>Vitesse:</p><input type='text' name='vitesse'><br>";
-  page  +=      "<p>Luminositée</p><input type='text' name='luminosite'><br>";
+  page  +=      "<p>Luminositée</p><input type='text' name='luminosite'> (-1 pour éteindre)<br>";
   page  +=      "<p>Timer présence</p><input type='text' name='presence'><br>";
   page  +=      "<p>font</p><input type='text' name='font'><br>";
   page  +=      "<input type='submit' value='Submit'><br>";
@@ -144,6 +153,8 @@ void setup () {
   // initialise le desteteur de présence
   pinMode(PresencePin, INPUT);
 
+  // Positionne en etat normal
+  GlobalState = STATE_NORMAL;
 
 }  // end of setup
 
@@ -227,9 +238,11 @@ void handleSubmitPage() {
         if (Luminosite >= 0 and Luminosite <= 15) {
           display.begin ();
           display.setIntensity (Luminosite);
+          GlobalState = STATE_NORMAL;
         } // fin if
         else if (Luminosite == -1 ) { // Passe en mode eteinte
           display.end();
+          GlobalState = STATE_LOWPOWER;
         }
         else {
           Luminosite = 5;
@@ -252,13 +265,16 @@ void handleSubmitPage() {
 // loop
 //
 void loop () {
-  // update display if time is up
-  if (millis () - lastMoved >= MOVE_INTERVAL) {
-    updateDisplay ();
-    lastMoved = millis ();
-    //Serial.println(timeClient.getFormattedTime());
-  }
 
+  if (GlobalState == STATE_NORMAL) {
+    // update display if time is up
+    if (millis () - lastMoved >= MOVE_INTERVAL) {
+      updateDisplay ();
+      lastMoved = millis ();
+      //Serial.println(timeClient.getFormattedTime());
+    }
+  }
+    
   PresenceVal = digitalRead(PresencePin);
   if (PresenceVal == HIGH) {
     //   Serial.println("Hight");

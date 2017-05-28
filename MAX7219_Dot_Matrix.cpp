@@ -169,6 +169,10 @@ void MAX7219_Dot_Matrix::sendChar (const byte chip, const byte data)
     for (byte i = 0; i < 8; i++)
       pixels [i] = MAX7219_Dot_Matrix_SINCLAIR_font [data] [i]; 
   }
+  else if (NoFont == 2) {
+     for (byte i = 0; i < 8; i++)
+      pixels [i] = MAX7219_Dot_Matrix_6pix_font [data] [i]; 
+  }
 
   send64pixels (chip, pixels);
   }  // end of sendChar
@@ -183,18 +187,23 @@ void MAX7219_Dot_Matrix::send64pixels (const byte chip, const byte pixels [8])
     // send extra NOPs to push the pixels out to extra displays
     for (byte i = 0; i < chip; i++)
       sendByte (MAX7219_REG_NOOP, MAX7219_REG_NOOP);
-    // rotate pixels 90 degrees
+    
+    // rotate pixels 90 degrees original
     byte b = 0;
     for (byte i = 0; i < 8; i++)
       b |= bitRead (pixels [i], col) << (7 - i);
     sendByte (col + 1, b);
+
     // end with enough NOPs so later chips don't update
     for (int i = 0; i < chips_ - chip - 1; i++)
       sendByte (MAX7219_REG_NOOP, MAX7219_REG_NOOP);
     // all done!
+    
     digitalWrite (load_, HIGH);
     }   // end of for each column
-  }  // end of sendChar
+  }  // end of send64pixels
+
+
 
 // write an entire null-terminated string to the LEDs
 void MAX7219_Dot_Matrix::sendString (const char * s)
@@ -277,7 +286,9 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
     }  // positive offset
 
     // send the appropriate 8 pixels (offset will be from -7 to +7)
-    send64pixels (chip, &thisChip [8 + offset]);
+    send64pixels (chip, &thisChip [8 + offset]);  
+    
+    
 
   } // for each chip
 

@@ -1,6 +1,16 @@
+* 2017/05/28
+ - Ajout de 2 module suplémentaire.
+ - Pour afficher des police 5 Bit, il faut tout refaire au niveau de l'envoie des donnée
+ - Gestion d'un état qui permet d'économiser l'énergie, en arrêtant le Les, mais sans metre encore le controleur dans un etat de sommeil
+
+* 2017/05/26
+ - LE problème c'est que tous l'algo est pensé pour envoyé 8 bit * 8bit pour chaque caracetere
+ - Quand on en envoie 6 x 6 il faut generer les caracteres suivant avant mais comment ??????
+
 * 2017/05/22
  - ajout d'une font 5 bit de large et tentative d'inserer dans MAX7219_Dot_Matrix::sendSmooth
    -> Les caracteres ne sont pas plus sérré ??????????
+
 * 2017/05/21
  - Ajout de la librairie NTP : https://github.com/arduino-libraries/NTPClient
   -=- Reste a géré le Problème de changement d'heure.
