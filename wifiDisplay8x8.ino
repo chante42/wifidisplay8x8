@@ -13,6 +13,10 @@
 //
 // A explorer pout l'auto config Wifi
 // https://github.com/tzapu/WiFiManager/blob/master/examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino
+//
+// https://www.john-lassen.de/en/projects/esp-8266-arduino-ide-webconfig
+//
+//
 //#include <WiFiClient.h>
 #include <ESP8266WiFi.h>
 #include <NTPClient.h>
@@ -274,7 +278,7 @@ void loop () {
       //Serial.println(timeClient.getFormattedTime());
     }
   }
-    
+
   PresenceVal = digitalRead(PresencePin);
   if (PresenceVal == HIGH) {
     //   Serial.println("Hight");
