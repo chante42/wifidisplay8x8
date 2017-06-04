@@ -1,5 +1,5 @@
-#ifndef PAGE_INFOMATION_H
-#define PAGE_INFOMATION_H
+#ifndef PAGE_NETWORK_CONFIGURATION_H
+#define PAGE_NETWORK_CONFIGURATION_H
 
 
 //
@@ -34,13 +34,7 @@ function GetState()
 
 window.onload = function ()
 {
-	load("style.css","css", function() 
-	{
-		load("microajax.js","js", function() 
-		{
-				GetState();
-		});
-	});
+	
 }
 function load(e,t,n){if("js"==t){var a=document.createElement("script");a.src=e,a.type="text/javascript",a.async=!1,a.onload=function(){n()},document.getElementsByTagName("head")[0].appendChild(a)}else if("css"==t){var a=document.createElement("link");a.href=e,a.rel="stylesheet",a.type="text/css",a.async=!1,a.onload=function(){n()},document.getElementsByTagName("head")[0].appendChild(a)}}
 

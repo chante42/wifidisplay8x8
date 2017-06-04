@@ -1,3 +1,9 @@
+* 2017/06/05
+ - Fin de la gestion de config avec mise en place d'un CSS dédier et d'un fichier ico associé
+ - Creation du fichier PAge_Message.h qui reprend les fonction qui existait dans .ino
+ TODO : 
+    Regrouper toutes les HEADER et FOOTER des page
+
 * 2017/06/02
  - Ajout de la gestion de configuration en mode AP d'après :
    https://www.john-lassen.de/en/projects/esp-8266-arduino-ide-webconfig

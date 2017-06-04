@@ -32,7 +32,6 @@
 /*
 Include the HTML, STYLE and Script "Pages"
 */
-#include "Page_Root.h"
 #include "Page_Admin.h"
 #include "Page_Script.js.h"
 #include "Page_Style.css.h"
@@ -40,8 +39,7 @@ Include the HTML, STYLE and Script "Pages"
 #include "Page_Information.h"
 #include "Page_General.h"
 #include "PAGE_NetworkConfiguration.h"
-#include "example.h"
-
+#include "Page_Message.h"
 
 #define ACCESS_POINT_NAME  "ESP-LED-8x8"        
 #define ACCESS_POINT_PASSWORD  "12345678" 
@@ -49,9 +47,6 @@ Include the HTML, STYLE and Script "Pages"
 
 
 const byte NbMax7219 = 15;
-const char* ssid = "Bbox-0E7760"; // put your router name
-const char* password = "n0uswifi12";// put your password
-
 
 // 15 chips (display modules), hardware SPI with load on D10
 MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
@@ -75,16 +70,9 @@ int PresenceVal = 0;
 // Variable Globale
 unsigned long lastMoved = 0;
 unsigned long MOVE_INTERVAL = 30;  // mS
-unsigned int Luminosite = 15;
-unsigned int TimerPresence = 300; // s
+
 int  messageOffset;
 
-//
-// définition de l'etat du montage pour tenté d'economiser de l'énergie
-#define STATE_NORMAL    1
-#define STATE_LOWPOWER  2
-#define STATE_SLEEP     3
-byte GlobalState = STATE_NORMAL;
 
 #define MAXLENMESSAGE  200
 
@@ -93,155 +81,15 @@ byte GlobalState = STATE_NORMAL;
 
 char  message [MAXLENMESSAGE] = "Olivier Chanteloup 2017/04/24  eé eè aà";
 
-String getHtmlPageHeader() {
-  String  page   = "<html lang='fr'>";
-  page  += "<head>";
-  page  +=    "<meta charset='UTF-8'>";
-  page  +=    "<title> Afficher LED</title>";
-  page  +=    "<style> body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }</style>";
-  page  += "</head>";
-  page  += "<body>";
-  return page;
-}
 
-String getHtmlPageMiddle() {
-  String  page  =     "<form action='/submit' method='GET'>";
-  page  +=      "<p>Message à afficher:</p><input type='text' name='message'><br>";
-  page  +=      "<p>Vitesse:</p><input type='text' name='vitesse'><br>";
-  page  +=      "<p>Luminositée</p><input type='text' name='luminosite'> (-1 pour éteindre)<br>";
-  page  +=      "<p>Timer présence</p><input type='text' name='presence'><br>";
-  page  +=      "<p>font</p><input type='text' name='font'><br>";
-  page  +=      "<input type='submit' value='Submit'><br>";
-  page  +=    "</form>";
-  return page;
-}
-
-String getHtmlPageFooter() {
-  String  page =  "</body>";
-  page += "</html>";
-  return page;
-}
-
+int Luminosite = 15;
+unsigned int TimerPresence = 300; // s
 //
-//   setup
-//
-void setup () {
-  display.begin ();
-
-  strncpy(message, "http://192.168.4.1/admin.html", MAXLENMESSAGE - 1);
-  updateDisplay();
-  Serial.begin(9600);
-  // We start by connecting to a WiFi network
-
-  EEPROM.begin(512);
-  delay(500);
-  Serial.println("Starting ES8266");
-  if (!ReadConfig())
-  {
-    // DEFAULT CONFIG
-    config.ssid = "MYSSID";
-    config.password = "MYPASSWORD";
-    config.dhcp = true;
-    config.IP[0] = 192;config.IP[1] = 168;config.IP[2] = 1;config.IP[3] = 100;
-    config.Netmask[0] = 255;config.Netmask[1] = 255;config.Netmask[2] = 255;config.Netmask[3] = 0;
-    config.Gateway[0] = 192;config.Gateway[1] = 168;config.Gateway[2] = 1;config.Gateway[3] = 1;
-    config.ntpServerName = "0.de.pool.ntp.org";
-    config.Update_Time_Via_NTP_Every =  0;
-    config.timezone = -10;
-    config.daylight = true;
-    config.DeviceName = "Not Named";
-    config.AutoTurnOff = false;
-    config.AutoTurnOn = false;
-    config.TurnOffHour = 0;
-    config.TurnOffMinute = 0;
-    config.TurnOnHour = 0;
-    config.TurnOnMinute = 0;
-    WriteConfig();
-    Serial.println("General config applied");
-  }
-  
-  
-  if (AdminEnabled)
-  {
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
-  }
-  else
-  {
-    WiFi.mode(WIFI_STA);
-  }
-
-  ConfigureWifi();
-  
-
-  //server.on ( "/", processExample  );
-  server.on("/", handleRootPage);
-  server.on("/submit", handleSubmitPage);
-  
-  server.on ( "/admin/filldynamicdata", filldynamicdata );
-  
-  server.on ( "/favicon.ico",   []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
-
-
-  server.on ( "/admin.html", []() { Serial.println("admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );   }  );
-  server.on ( "/config.html", send_network_configuration_html );
-  server.on ( "/info.html", []() { Serial.println("info.html"); server.send ( 200, "text/html", PAGE_Information );   }  );
-  server.on ( "/ntp.html", send_NTP_configuration_html  );
-  server.on ( "/general.html", send_general_html  );
-//  server.on ( "/example.html", []() { server.send ( 200, "text/html", PAGE_EXAMPLE );  } );
-  server.on ( "/style.css", []() { Serial.println("style.css"); server.send ( 200, "text/plain", PAGE_Style_css );  } );
-  server.on ( "/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "text/plain", PAGE_microajax_js );  } );
-  server.on ( "/admin/values", send_network_configuration_values_html );
-  server.on ( "/admin/connectionstate", send_connection_state_values_html );
-  server.on ( "/admin/infovalues", send_information_values_html );
-  server.on ( "/admin/ntpvalues", send_NTP_configuration_values_html );
-  server.on ( "/admin/generalvalues", send_general_configuration_values_html);
-  server.on ( "/admin/devicename",     send_devicename_value_html);
- 
-
- 
-
-  server.onNotFound ( []() { Serial.println("Page Not Found"); server.send ( 400, "text/html", "Page not Found" );   }  );
-  server.begin();
-  Serial.println( "HTTP server started" );
-  tkSecond.attach(1,Second_Tick);
-  UDPNTPClient.begin(2390);  // Port for NTP receive
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  
-  
-  Serial.printf("Web server started, open %s in a web browser\n", WiFi.localIP().toString().c_str());
-
-  // initialise le desteteur de présence
-  pinMode(PresencePin, INPUT);
-
-  // Positionne en etat normal
-  GlobalState = STATE_NORMAL;
-
-}  // end of setup
-
-
-//
-// updateDisplay
-//
-void updateDisplay () {
-  display.sendSmooth (message, messageOffset);
-
-  // next time show one pixel onwards
-  if (messageOffset++ >= (int) (strlen (message) * 8)) {
-    messageOffset = - NbMax7219 * 8;
-  }
-}  // end of updateDisplay
-
-//
-// Page envoyer lors GET /
-//
-void handleRootPage() {
-  server.send(200, "text/html", getHtmlPageHeader() + getHtmlPageMiddle() + getHtmlPageFooter());
-}
+// définition de l'etat du montage pour tenté d'economiser de l'énergie
+#define STATE_NORMAL    1
+#define STATE_LOWPOWER  2
+#define STATE_SLEEP     3
+byte GlobalState = STATE_NORMAL;
 
 //
 // Page envoyer lors GET Submit
@@ -255,7 +103,7 @@ void handleSubmitPage() {
         server.arg("message").toCharArray(message, server.arg("message").length() + 1);
         Serial.println("message : ");
         Serial.println(message);
-        for (int j = 0; j < strlen(message); j++) {
+        for (unsigned int j = 0; j < strlen(message); j++) {
           Serial.print(message[j], DEC);
           if (message[j] == 195) {
             if (message[j + 1] == 160) { // à
@@ -322,9 +170,118 @@ void handleSubmitPage() {
   } // fin if
 
 
-  server.send(200, "text/html", getHtmlPageHeader() + getHtmlPageMiddle() + tmp  + getHtmlPageFooter());
+  server.send(200, "text/html", PAGE_Message);
 
 }// FIN handleSubmitPage()
+
+
+//
+//   setup
+//
+void setup () {
+  display.begin ();
+
+  strncpy(message, "http://192.168.4.1/admin.html", MAXLENMESSAGE - 1);
+  updateDisplay();
+  Serial.begin(9600);
+  // We start by connecting to a WiFi network
+
+  EEPROM.begin(512);
+  delay(500);
+  Serial.println("Starting ES8266");
+  if (!ReadConfig())
+  {
+    // DEFAULT CONFIG
+    config.ssid = "MYSSID";
+    config.password = "MYPASSWORD";
+    config.dhcp = true;
+    config.IP[0] = 192;config.IP[1] = 168;config.IP[2] = 1;config.IP[3] = 100;
+    config.Netmask[0] = 255;config.Netmask[1] = 255;config.Netmask[2] = 255;config.Netmask[3] = 0;
+    config.Gateway[0] = 192;config.Gateway[1] = 168;config.Gateway[2] = 1;config.Gateway[3] = 1;
+    config.ntpServerName = "0.de.pool.ntp.org";
+    config.Update_Time_Via_NTP_Every =  0;
+    config.timezone = -10;
+    config.daylight = true;
+    config.DeviceName = "Not Named";
+    config.AutoTurnOff = false;
+    config.AutoTurnOn = false;
+    config.TurnOffHour = 0;
+    config.TurnOffMinute = 0;
+    config.TurnOnHour = 0;
+    config.TurnOnMinute = 0;
+    WriteConfig();
+    Serial.println("General config applied");
+  }
+  
+  
+  if (AdminEnabled)
+  {
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
+  }
+  else
+  {
+    WiFi.mode(WIFI_STA);
+  }
+
+  ConfigureWifi();
+  
+
+  //server.on ( "/", processExample  );
+  server.on("/", []() { Serial.println("message.html"); server.send ( 200, "text/html", PAGE_Message );   }  );
+  server.on("/submit", handleSubmitPage);
+  server.on ( "/favicon.ico",   []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
+  server.on ( "/admin.html", []() { Serial.println("admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );   }  );
+  server.on ( "/config.html", send_network_configuration_html );
+  server.on ( "/info.html", []() { Serial.println("info.html"); server.send ( 200, "text/html", PAGE_Information );   }  );
+  server.on ( "/ntp.html", send_NTP_configuration_html  );
+  server.on ( "/general.html", send_general_html  );
+  server.on ( "/style.css", []() { Serial.println("style.css"); server.send ( 200, "text/plain", PAGE_Style_css );  } );
+  server.on ( "/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "text/plain", PAGE_microajax_js );  } );
+  server.on ( "/admin/values", send_network_configuration_values_html );
+  server.on ( "/admin/connectionstate", send_connection_state_values_html );
+  server.on ( "/admin/infovalues", send_information_values_html );
+  server.on ( "/admin/ntpvalues", send_NTP_configuration_values_html );
+  server.on ( "/admin/generalvalues", send_general_configuration_values_html);
+  server.on ( "/admin/devicename",     send_devicename_value_html);
+  server.onNotFound ( []() { Serial.println("Page Not Found"); server.send ( 400, "text/html", "Page not Found" );   }  );
+  server.begin();
+
+  Serial.println( "HTTP server started" );
+
+  tkSecond.attach(1,Second_Tick);
+  UDPNTPClient.begin(2390);  // Port for NTP receive
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  
+  
+  Serial.printf("Web server started, open %s in a web browser\n", WiFi.localIP().toString().c_str());
+
+  // initialise le detecteur de présence
+  pinMode(PresencePin, INPUT);
+
+  // Positionne en etat normal
+  GlobalState = STATE_NORMAL;
+
+}  // end of setup
+
+
+//
+// updateDisplay
+//
+void updateDisplay () {
+  display.sendSmooth (message, messageOffset);
+
+  // next time show one pixel onwards
+  if (messageOffset++ >= (int) (strlen (message) * 8)) {
+    messageOffset = - NbMax7219 * 8;
+  }
+}  // end of updateDisplay
+
+
 
 //
 // loop

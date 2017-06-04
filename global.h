@@ -1,40 +1,40 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-ESP8266WebServer server(80);									// The Webserver
-boolean firstStart = true;										// On firststart = true, NTP will try to get a valid time
-int AdminTimeOutCounter = 0;									// Counter for Disabling the AdminMode
-strDateTime DateTime;											// Global DateTime structure, will be refreshed every Second
-WiFiUDP UDPNTPClient;											// NTP Client
-unsigned long UnixTimestamp = 0;								// GLOBALTIME  ( Will be set by NTP)
-boolean Refresh = false; // For Main Loop, to refresh things like GPIO / WS2812
-int cNTP_Update = 0;											// Counter for Updating the time via NTP
-Ticker tkSecond;												// Second - Timer for Updating Datetime Structure
-boolean AdminEnabled = true;		// Enable Admin Mode for a given Time
-byte Minute_Old = 100;				// Helpvariable for checking, when a new Minute comes up (for Auto Turn On / Off)
+ESP8266WebServer 			server(80);	// The Webserver
+boolean firstStart 			= true;		// On firststart = true, NTP will try to get a valid time
+int AdminTimeOutCounter 	= 0;		// Counter for Disabling the AdminMode
+strDateTime DateTime;					// Global DateTime structure, will be refreshed every Second
+WiFiUDP UDPNTPClient;					// NTP Client
+unsigned long UnixTimestamp = 0;		// GLOBALTIME  ( Will be set by NTP)
+boolean Refresh 			= false; 	// For Main Loop, to refresh things like GPIO / WS2812
+int cNTP_Update 			= 0;		// Counter for Updating the time via NTP
+Ticker tkSecond;						// Second - Timer for Updating Datetime Structure
+boolean AdminEnabled 		= true;		// Enable Admin Mode for a given Time
+byte Minute_Old 			= 100;		// Helpvariable for checking, when a new Minute comes up (for Auto Turn On / Off)
 
 
 struct strConfig {
-	String ssid;
-	String password;
-	byte  IP[4];
-	byte  Netmask[4];
-	byte  Gateway[4];
-	boolean dhcp;
-	String ntpServerName;
-	long Update_Time_Via_NTP_Every;
-	long timezone;
-	boolean daylight;
-	String DeviceName;
-	boolean AutoTurnOff;
-	boolean AutoTurnOn;
-	byte TurnOffHour;
-	byte TurnOffMinute;
-	byte TurnOnHour;
-	byte TurnOnMinute;
-	byte LED_R;
-	byte LED_G;
-	byte LED_B;
+	String 		ssid;
+	String 		password;
+	byte  		IP[4];
+	byte  		Netmask[4];
+	byte  		Gateway[4];
+	boolean 	dhcp;
+	String 		ntpServerName;
+	long 		Update_Time_Via_NTP_Every;
+	long 		timezone;
+	boolean 	daylight;
+	String 		DeviceName;
+	boolean 	AutoTurnOff;
+	boolean 	AutoTurnOn;
+	byte 		TurnOffHour;
+	byte 		TurnOffMinute;
+	byte 		TurnOnHour;
+	byte 		TurnOnMinute;
+	byte 		LED_R;
+	byte 		LED_G;
+	byte 		LED_B;
 }   config;
 
 
@@ -120,34 +120,34 @@ boolean ReadConfig()
 
 		config.timezone = EEPROMReadlong(22); // 4 Byte
 
-		config.LED_R = EEPROM.read(26);
-		config.LED_G = EEPROM.read(27);
-		config.LED_B = EEPROM.read(28);
+		config.LED_R 		= EEPROM.read(26);
+		config.LED_G 		= EEPROM.read(27);
+		config.LED_B 		= EEPROM.read(28);
 
-		config.IP[0] = EEPROM.read(32);
-		config.IP[1] = EEPROM.read(33);
-		config.IP[2] = EEPROM.read(34);
-		config.IP[3] = EEPROM.read(35);
-		config.Netmask[0] = EEPROM.read(36);
-		config.Netmask[1] = EEPROM.read(37);
-		config.Netmask[2] = EEPROM.read(38);
-		config.Netmask[3] = EEPROM.read(39);
-		config.Gateway[0] = EEPROM.read(40);
-		config.Gateway[1] = EEPROM.read(41);
-		config.Gateway[2] = EEPROM.read(42);
-		config.Gateway[3] = EEPROM.read(43);
-		config.ssid = ReadStringFromEEPROM(64);
-		config.password = ReadStringFromEEPROM(96);
+		config.IP[0] 		= EEPROM.read(32);
+		config.IP[1] 		= EEPROM.read(33);
+		config.IP[2] 		= EEPROM.read(34);
+		config.IP[3] 		= EEPROM.read(35);
+		config.Netmask[0] 	= EEPROM.read(36);
+		config.Netmask[1] 	= EEPROM.read(37);
+		config.Netmask[2] 	= EEPROM.read(38);
+		config.Netmask[3] 	= EEPROM.read(39);
+		config.Gateway[0] 	= EEPROM.read(40);
+		config.Gateway[1] 	= EEPROM.read(41);
+		config.Gateway[2] 	= EEPROM.read(42);
+		config.Gateway[3] 	= EEPROM.read(43);
+		config.ssid 		= ReadStringFromEEPROM(64);
+		config.password 	= ReadStringFromEEPROM(96);
 		config.ntpServerName = ReadStringFromEEPROM(128);
 		
 		
-		config.AutoTurnOn = EEPROM.read(300);
-		config.AutoTurnOff = EEPROM.read(301);
-		config.TurnOnHour = EEPROM.read(302);
-		config.TurnOnMinute = EEPROM.read(303);
-		config.TurnOffHour = EEPROM.read(304);
-		config.TurnOffMinute = EEPROM.read(305);
-		config.DeviceName= ReadStringFromEEPROM(306);
+		config.AutoTurnOn 		= EEPROM.read(300);
+		config.AutoTurnOff 		= EEPROM.read(301);
+		config.TurnOnHour 		= EEPROM.read(302);
+		config.TurnOnMinute 	= EEPROM.read(303);
+		config.TurnOffHour 		= EEPROM.read(304);
+		config.TurnOffMinute 	= EEPROM.read(305);
+		config.DeviceName		= ReadStringFromEEPROM(306);
 		return true;
 		
 	}
@@ -169,9 +169,6 @@ byte packetBuffer[ NTP_PACKET_SIZE];
 void NTPRefresh()
 {
 
-	
-
-
 	if (WiFi.status() == WL_CONNECTED)
 	{
 		IPAddress timeServerIP; 
@@ -181,14 +178,14 @@ void NTPRefresh()
 
 		Serial.println("sending NTP packet...");
 		memset(packetBuffer, 0, NTP_PACKET_SIZE);
-		packetBuffer[0] = 0b11100011;   // LI, Version, Mode
-		packetBuffer[1] = 0;     // Stratum, or type of clock
-		packetBuffer[2] = 6;     // Polling Interval
-		packetBuffer[3] = 0xEC;  // Peer Clock Precision
-		packetBuffer[12]  = 49;
-		packetBuffer[13]  = 0x4E;
-		packetBuffer[14]  = 49;
-		packetBuffer[15]  = 52;
+		packetBuffer[0] 	= 0b11100011;   // LI, Version, Mode
+		packetBuffer[1] 	= 0;     // Stratum, or type of clock
+		packetBuffer[2] 	= 6;     // Polling Interval
+		packetBuffer[3] 	= 0xEC;  // Peer Clock Precision
+		packetBuffer[12]  	= 49;
+		packetBuffer[13]  	= 0x4E;
+		packetBuffer[14]  	= 49;
+		packetBuffer[15]  	= 52;
 		UDPNTPClient.beginPacket(timeServerIP, 123); 
 		UDPNTPClient.write(packetBuffer, NTP_PACKET_SIZE);
 		UDPNTPClient.endPacket();
