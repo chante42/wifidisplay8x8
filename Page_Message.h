@@ -10,7 +10,6 @@
 const char PAGE_Message[] PROGMEM = R"=====(
   <html lang='fr'>
     <head>
-    
         <meta charset='UTF-8'>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -23,11 +22,11 @@ const char PAGE_Message[] PROGMEM = R"=====(
       <strong>Message</strong>
       <hr>
       <form action='/submit' method='GET'>
-        <p>Message à afficher:</p><input type='text' name='message'><br>
-        <p>Vitesse:</p><input type='text' name='vitesse'><br>
-        <p>Luminositée</p><input type='text' name='luminosite'> (-1 pour éteindre)<br>
-        <p>Timer présence</p><input type='text' name='presence'><br>
-        <p>font</p><input type='text' name='font'><br>
+        <p>Message à afficher:</p><input id='message' type='text' name='message'><br>
+        <p>Vitesse:</p><input type='text' id='vitesse' name='vitesse'><br>
+        <p>Luminositée</p><input type='text' id='luminosite' name='luminosite'> (-1 pour éteindre)<br>
+        <p>Timer présence</p><input type='text' id=timer_presence' name='presence'><br>
+        <p>font</p><input type='text' id='font' name='font'><br>
         <input type='submit' value='Submit'><br>
       </form>
 
@@ -35,7 +34,7 @@ const char PAGE_Message[] PROGMEM = R"=====(
       <script>                
         window.onload = function (){
         
-              setValues("/admin/filldynamicdata");  //-- this function calls the function on the ESP      
+              setValues("/getCurrentMessage");  //-- this function calls the function on the ESP      
         
         
         }
@@ -63,3 +62,4 @@ void processExample()
     }
     server.send ( 200, "text/html", ""  ); 
 }
+

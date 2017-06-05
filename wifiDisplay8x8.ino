@@ -83,7 +83,8 @@ char  message [MAXLENMESSAGE] = "Olivier Chanteloup 2017/04/24  eé eè aà";
 
 
 int Luminosite = 15;
-unsigned int TimerPresence = 300; // s
+int TimerPresence = 300; // s
+int Fonte = 0;
 //
 // définition de l'etat du montage pour tenté d'economiser de l'énergie
 #define STATE_NORMAL    1
@@ -141,7 +142,8 @@ void handleSubmitPage() {
       } //fin if vitesse
 
       if (server.argName(i) == "font" and server.arg("font") != "" ) {
-        display.selectFont(atoi(server.arg("font").c_str()));
+        Fonte = atoi(server.arg("font").c_str());
+        display.selectFont(Fonte);
         tmp += "<p>font :'" + String(server.arg("font")) + "' envoyé</p><br>";
       } //fin if font
 
@@ -173,6 +175,41 @@ void handleSubmitPage() {
   server.send(200, "text/html", PAGE_Message);
 
 }// FIN handleSubmitPage()
+
+//
+//   FILL THE PAGE WITH VALUES
+//
+
+void send_message_values_html()
+{
+
+  char move_s[5];
+  char luminosite_s[5];
+  char timerPresence_s[5];
+  char fonte_s[5];
+  String values ="";
+
+  values += "message|"        + (String)  message            +"|input\n";
+  values += "vitesse|"        + (String) itoa(MOVE_INTERVAL, move_s,10) + "|input\n";
+  values += "luminosite|"     + (String) itoa(Luminosite, luminosite_s,10)    + "|input\n";
+  values += "timer_presence|" + (String) itoa(TimerPresence, timerPresence_s,10) + "|input\n";
+  values += "font|"           + (String) itoa(Fonte, fonte_s,10)         + "|input\n";
+  server.send ( 200, "text/plain", values);
+  Serial.println(__FUNCTION__); 
+  
+}
+
+//
+// updateDisplay
+//
+void updateDisplay () {
+  display.sendSmooth (message, messageOffset);
+
+  // next time show one pixel onwards
+  if (messageOffset++ >= (int) (strlen (message) * 8)) {
+    messageOffset = - NbMax7219 * 8;
+  }
+}  // end of updateDisplay
 
 
 //
@@ -229,6 +266,7 @@ void setup () {
 
   //server.on ( "/", processExample  );
   server.on("/", []() { Serial.println("message.html"); server.send ( 200, "text/html", PAGE_Message );   }  );
+  server.on("/getCurrentMessage", send_message_values_html);
   server.on("/submit", handleSubmitPage);
   server.on ( "/favicon.ico",   []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
   server.on ( "/admin.html", []() { Serial.println("admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );   }  );
@@ -236,8 +274,8 @@ void setup () {
   server.on ( "/info.html", []() { Serial.println("info.html"); server.send ( 200, "text/html", PAGE_Information );   }  );
   server.on ( "/ntp.html", send_NTP_configuration_html  );
   server.on ( "/general.html", send_general_html  );
-  server.on ( "/style.css", []() { Serial.println("style.css"); server.send ( 200, "text/plain", PAGE_Style_css );  } );
-  server.on ( "/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "text/plain", PAGE_microajax_js );  } );
+  server.on ( "/style.css", []() { Serial.println("style.css"); server.send ( 200, "text/css", PAGE_Style_css );  } );
+  server.on ( "/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "application/javascript", PAGE_microajax_js );  } );
   server.on ( "/admin/values", send_network_configuration_values_html );
   server.on ( "/admin/connectionstate", send_connection_state_values_html );
   server.on ( "/admin/infovalues", send_information_values_html );
@@ -269,17 +307,6 @@ void setup () {
 }  // end of setup
 
 
-//
-// updateDisplay
-//
-void updateDisplay () {
-  display.sendSmooth (message, messageOffset);
-
-  // next time show one pixel onwards
-  if (messageOffset++ >= (int) (strlen (message) * 8)) {
-    messageOffset = - NbMax7219 * 8;
-  }
-}  // end of updateDisplay
 
 
 

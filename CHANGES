@@ -1,8 +1,11 @@
 * 2017/06/05
+  - Creation de la fct de recuperation des valeurs actuel pour message
+
+* 2017/06/04
  - Fin de la gestion de config avec mise en place d'un CSS dédier et d'un fichier ico associé
  - Creation du fichier PAge_Message.h qui reprend les fonction qui existait dans .ino
  TODO : 
-    Regrouper toutes les HEADER et FOOTER des page
+    Regrouper toutes les HEADER et FOOTER des pages
 
 * 2017/06/02
  - Ajout de la gestion de configuration en mode AP d'après :
