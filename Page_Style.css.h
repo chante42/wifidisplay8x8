@@ -1,9 +1,14 @@
 
 const char PAGE_Style_css[] PROGMEM = R"=====(
-body { background-color: #000000; color: #fa0909; font-family: avenir, helvetica, arial, sans-serif;  letter-spacing: 0.15em;} 
-hr {    background-color: #eee;    border: 0 none;   color: #eee;    height: 1px; } 
-input { color : #fa0909; background-color: #101010 }
+
+body 	{ background-color: #000000; color: #fa0909; font-family: avenir, helvetica, arial, sans-serif;  letter-spacing: 0.15em;} 
+hr 		{ background-color: #eee;    border: 0 none;   color: #eee;    height: 1px; } 
+input 	{ color : #fa0909; background-color: #101010; border:solid 1px white; border-radius:7px; text-align:center; box-shadow:0 0 6px;}
+select 	{ color : #fa0909; background-color: #101010; border:solid 1px white; border-radius:7px; text-align:right; box-shadow:0 0 6px; }
+
+#title { font-weight: bold; text-align:center; border:solid 1px white; border-radius:12px; margin : 0.5em;}
 .btn, .btn:link, .btn:visited {  
+
 	border-radius: 0.3em;  
 	border-style: solid;  
 	border-width: 1px;  
@@ -74,6 +79,5 @@ input { color : #fa0909; background-color: #101010 }
 	.btn--full {  
 	max-width: 16em !important; } 
 }
-
 )=====";
  

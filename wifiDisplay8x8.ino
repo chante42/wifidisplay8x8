@@ -79,7 +79,8 @@ int  messageOffset;
 //WiFiServer server(80);
 //ESP8266WebServer server(80); dans global.h
 
-char  message [MAXLENMESSAGE] = "Olivier Chanteloup 2017/04/24  eé eè aà";
+char  message [MAXLENMESSAGE] ;
+char messageOrigine [MAXLENMESSAGE] = "Olivier Chanteloup 2017/04/24  eé eè aà";
 
 
 int Luminosite = 15;
@@ -163,9 +164,9 @@ void handleSubmitPage() {
           Luminosite = 5;
         }
       }// fin if luminosite
-      if (server.argName(i) == "presence" and server.arg("presence") != "" ) {
-        TimerPresence = atoi(server.arg("presence").c_str());
-        tmp += "<p>time presence :'" + String(server.arg("presence")) + "' envoyé</p><br>";
+      if (server.argName(i) == "timer_presence" and server.arg("timer_presence") != "" ) {
+        TimerPresence = atoi(server.arg("timer_presence").c_str());
+        tmp += "<p>time presence :'" + String(server.arg("timer_presence")) + "' envoyé</p><br>";
       } //fin if presence
     } // fin for
 
@@ -188,8 +189,8 @@ void send_message_values_html()
   char timerPresence_s[5];
   char fonte_s[5];
   String values ="";
-
-  values += "message|"        + (String)  message            +"|input\n";
+  // s'il y a des caractere accentué, il y a un Pb de réafichage dans la page html
+  //values += "message|"        + (String)  message            +"|input\n";
   values += "vitesse|"        + (String) itoa(MOVE_INTERVAL, move_s,10) + "|input\n";
   values += "luminosite|"     + (String) itoa(Luminosite, luminosite_s,10)    + "|input\n";
   values += "timer_presence|" + (String) itoa(TimerPresence, timerPresence_s,10) + "|input\n";
@@ -208,9 +209,34 @@ void updateDisplay () {
   // next time show one pixel onwards
   if (messageOffset++ >= (int) (strlen (message) * 8)) {
     messageOffset = - NbMax7219 * 8;
+
+    // update Date Heure Si besoin
+
   }
 }  // end of updateDisplay
 
+//
+// traiteVariable
+//
+//char *traiteVariable (const char *mes, char *mesDest ){
+//  unsigned int i, j,k, lenMes, debVar;
+//  lenMes = strlen(mes);
+//
+//  for (i=0 ; i < lenMes; i++) {
+//    // debut de variable 
+//    if (mes[i] == '$' and i < lesMes -2 and mes[i+1] == '$') {
+//      debVar = i;
+//      i++;
+//      for (j=i; mes[j] != ' ' and mes[j] != '\0'; j++);
+//      if (strcmp(mes + debVar,"$$date") == 0){
+//        strncpy(mesDest, mes, debVar);
+//
+//      }// fin IF strcmp
+//
+//    } // FIN if mes
+//  } // fin FOR i
+//
+//}
 
 //
 //   setup

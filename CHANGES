@@ -1,5 +1,9 @@
 * 2017/06/05
   - Creation de la fct de recuperation des valeurs actuel pour message
+  - Amélioration de l'affichage de la page de saisie de message
+  TODO : 
+    1) créer fonction de gestion de variable : par exemple $$date, $$heure, $$
+    2) Ajout Dans Admin de la gestion du nombre de module led 8x8
 
 * 2017/06/04
  - Fin de la gestion de config avec mise en place d'un CSS dédier et d'un fichier ico associé
