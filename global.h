@@ -35,6 +35,7 @@ struct strConfig {
 	byte 		LED_R;
 	byte 		LED_G;
 	byte 		LED_B;
+	byte 		NbMax7219;
 }   config;
 
 
@@ -87,6 +88,7 @@ void WriteConfig()
 	EEPROM.write(41,config.Gateway[1]);
 	EEPROM.write(42,config.Gateway[2]);
 	EEPROM.write(43,config.Gateway[3]);
+	EEPROM.write(44,config.NbMax7219);
 
 
 	WriteStringToEEPROM(64,config.ssid);
@@ -136,6 +138,7 @@ boolean ReadConfig()
 		config.Gateway[1] 	= EEPROM.read(41);
 		config.Gateway[2] 	= EEPROM.read(42);
 		config.Gateway[3] 	= EEPROM.read(43);
+		config.NbMax7219 	= EEPROM.read(44);
 		config.ssid 		= ReadStringFromEEPROM(64);
 		config.password 	= ReadStringFromEEPROM(96);
 		config.ntpServerName = ReadStringFromEEPROM(128);

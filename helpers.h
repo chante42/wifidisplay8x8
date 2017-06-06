@@ -103,20 +103,20 @@ long EEPROMReadlong(long address)
 
 void ConvertUnixTimeStamp( unsigned long TimeStamp, struct strDateTime* DateTime)
 {
-		uint8_t year;
+	uint8_t year;
 	uint8_t month, monthLength;
 	uint32_t time;
 	unsigned long days;
-	  time = (uint32_t)TimeStamp;
-	  DateTime->second = time % 60;
-	  time /= 60; // now it is minutes
-	  DateTime->minute = time % 60;
-	  time /= 60; // now it is hours
-	  DateTime->hour = time % 24;
-	  time /= 24; // now it is days
-	  DateTime->wday = ((time + 4) % 7) + 1;  // Sunday is day 1 
-  
-	  year = 0;  
+	time = (uint32_t)TimeStamp;
+	DateTime->second = time % 60;
+	time /= 60; // now it is minutes
+	DateTime->minute = time % 60;
+	time /= 60; // now it is hours
+	DateTime->hour = time % 24;
+	time /= 24; // now it is days
+	DateTime->wday = ((time + 4) % 7) + 1;  // Sunday is day 1 
+  	year = 0;  
+  	
 	days = 0;
 	while((unsigned)(days += (LEAP_YEAR(year) ? 366 : 365)) <= time) {
 		year++;

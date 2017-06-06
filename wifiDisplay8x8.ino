@@ -46,16 +46,17 @@ Include the HTML, STYLE and Script "Pages"
 #define AdminTimeOut 120  // Defines the Time in Seconds, when the Admin-Mode will be diabled
 
 
-const byte NbMax7219 = 15;
-
+const byte NbMax7219 = 2;
 // 15 chips (display modules), hardware SPI with load on D10
+// -=- initialise une premiere fois et recommence dans setup() pour avoir le nombre de led parametrable dans admin.html
 MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
-// MAX7219      NODEMCU
-// VCC          3.3v
-// GND          GND
-// Din          D7
-// CS :         D4
-// CLK          D5
+  // MAX7219      NODEMCU
+  // VCC          3.3v
+  // GND          GND
+  // Din          D7
+  // CS :         D4
+  // CLK          D5
+
 
 
 // Capteur de présence ne fonctionne pas
@@ -80,7 +81,7 @@ int  messageOffset;
 //ESP8266WebServer server(80); dans global.h
 
 char  message [MAXLENMESSAGE] ;
-char messageOrigine [MAXLENMESSAGE] = "Olivier Chanteloup 2017/04/24  eé eè aà";
+String messageString = "Olivier Chanteloup 2017/04/24  eé eè aà";
 
 
 int Luminosite = 15;
@@ -102,9 +103,13 @@ void handleSubmitPage() {
     for ( uint8_t i = 0; i < server.args(); i++ ) {
       if (server.argName(i) == "message" and server.arg("message") != "") {
         // do something here with value from server.arg(i);
-        server.arg("message").toCharArray(message, server.arg("message").length() + 1);
-        Serial.println("message : ");
-        Serial.println(message);
+        //server.arg("message").toCharArray(message, server.arg("message").length() + 1);
+        messageString = server.arg("message");
+        strcpy(message,messageString.c_str());
+        Serial.print("message : |");
+        Serial.print(message);
+        Serial.println("|");
+        
         for (unsigned int j = 0; j < strlen(message); j++) {
           Serial.print(message[j], DEC);
           if (message[j] == 195) {
@@ -135,6 +140,9 @@ void handleSubmitPage() {
         } // fin FOR
         tmp += "<hr><br>";
         tmp += "<p>message :'" + String(message) + "' envoyé</p><br>";
+
+        messageString = String(message);
+        replaceVariable();
       } //fin if message
 
       if (server.argName(i) == "vitesse" and server.arg("vitesse") != "" ) {
@@ -204,79 +212,84 @@ void send_message_values_html()
 // updateDisplay
 //
 void updateDisplay () {
+  
+
   display.sendSmooth (message, messageOffset);
 
   // next time show one pixel onwards
   if (messageOffset++ >= (int) (strlen (message) * 8)) {
-    messageOffset = - NbMax7219 * 8;
-
-    // update Date Heure Si besoin
-
+    messageOffset = - config.NbMax7219 * 8;   
+    replaceVariable();
   }
 }  // end of updateDisplay
 
 //
-// traiteVariable
+// Replace Variable
 //
-//char *traiteVariable (const char *mes, char *mesDest ){
-//  unsigned int i, j,k, lenMes, debVar;
-//  lenMes = strlen(mes);
-//
-//  for (i=0 ; i < lenMes; i++) {
-//    // debut de variable 
-//    if (mes[i] == '$' and i < lesMes -2 and mes[i+1] == '$') {
-//      debVar = i;
-//      i++;
-//      for (j=i; mes[j] != ' ' and mes[j] != '\0'; j++);
-//      if (strcmp(mes + debVar,"$$date") == 0){
-//        strncpy(mesDest, mes, debVar);
-//
-//      }// fin IF strcmp
-//
-//    } // FIN if mes
-//  } // fin FOR i
-//
-//}
+void replaceVariable() {
+  String messageStringTmp;
+
+  messageStringTmp = messageString;
+  messageStringTmp.replace("<hh:mm:ss>", (String) DateTime.hour + ":" + (String) + DateTime.minute +  ":"  + (String)  DateTime.second );
+  messageStringTmp.replace("<jj/mm/aa>", (String) DateTime.day  + "/" + (String)  DateTime.month + "/" + (String)  DateTime.year );
+  messageStringTmp.replace("<jj/mm>", (String) DateTime.day  + "/" + (String)  DateTime.month  );
+  strncpy(message, messageStringTmp.c_str(), MAXLENMESSAGE -1);
+  message[messageStringTmp.length()] = '\0';
+  message[MAXLENMESSAGE] = '\0';
+}
 
 //
 //   setup
 //
 void setup () {
-  display.begin ();
-
-  strncpy(message, "http://192.168.4.1/admin.html", MAXLENMESSAGE - 1);
-  updateDisplay();
+  
   Serial.begin(9600);
   // We start by connecting to a WiFi network
 
   EEPROM.begin(512);
   delay(500);
   Serial.println("Starting ES8266");
-  if (!ReadConfig())
-  {
+  if (!ReadConfig())  {
     // DEFAULT CONFIG
-    config.ssid = "MYSSID";
-    config.password = "MYPASSWORD";
-    config.dhcp = true;
-    config.IP[0] = 192;config.IP[1] = 168;config.IP[2] = 1;config.IP[3] = 100;
-    config.Netmask[0] = 255;config.Netmask[1] = 255;config.Netmask[2] = 255;config.Netmask[3] = 0;
-    config.Gateway[0] = 192;config.Gateway[1] = 168;config.Gateway[2] = 1;config.Gateway[3] = 1;
-    config.ntpServerName = "0.de.pool.ntp.org";
+    config.ssid           = "MYSSID";
+    config.password       = "MYPASSWORD";
+    config.dhcp           = true;
+    config.IP[0]          = 192;config.IP[1] = 168;config.IP[2] = 1;config.IP[3] = 100;
+    config.Netmask[0]     = 255;config.Netmask[1] = 255;config.Netmask[2] = 255;config.Netmask[3] = 0;
+    config.Gateway[0]     = 192;config.Gateway[1] = 168;config.Gateway[2] = 1;config.Gateway[3] = 1;
+    config.ntpServerName  = "0.de.pool.ntp.org";
     config.Update_Time_Via_NTP_Every =  0;
-    config.timezone = -10;
-    config.daylight = true;
-    config.DeviceName = "Not Named";
-    config.AutoTurnOff = false;
-    config.AutoTurnOn = false;
-    config.TurnOffHour = 0;
-    config.TurnOffMinute = 0;
-    config.TurnOnHour = 0;
-    config.TurnOnMinute = 0;
+    config.timezone       = -10;
+    config.daylight       = true;
+    config.DeviceName     = "Not Named";
+    config.AutoTurnOff    = false;
+    config.AutoTurnOn     = false;
+    config.TurnOffHour    = 0;
+    config.TurnOffMinute  = 0;
+    config.TurnOnHour     = 0;
+    config.TurnOnMinute   = 0;
+    config.NbMax7219      = 2;
     WriteConfig();
     Serial.println("General config applied");
   }
   
-  
+  Serial.print("Nb LED MAX7219 : |");
+  Serial.print(config.NbMax7219);
+  Serial.println("|");
+  // 15 chips (display modules), hardware SPI with load on D10
+  MAX7219_Dot_Matrix display(config.NbMax7219, 2);  // Chips / LOAD
+  // MAX7219      NODEMCU
+  // VCC          3.3v
+  // GND          GND
+  // Din          D7
+  // CS :         D4
+  // CLK          D5
+
+  display.begin ();
+
+  updateDisplay();
+
+
   if (AdminEnabled)
   {
     WiFi.mode(WIFI_AP_STA);
@@ -321,7 +334,14 @@ void setup () {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   
-  
+  if (strcmp(config.ssid.c_str(), "MYSSID") == 0) {
+    messageString = "http://192.168.4.1/admin.html";
+  }
+  else {
+    messageString = "http" + WiFi.localIP().toString();
+  }
+  replaceVariable();
+
   Serial.printf("Web server started, open %s in a web browser\n", WiFi.localIP().toString().c_str());
 
   // initialise le detecteur de présence
