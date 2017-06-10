@@ -1,7 +1,13 @@
+* 2017/06/10
+ - Mise en Place de la Variable NoFont, en tant que variable de la classe MAX7219_Dot_Matrix
+ - Correction de la gestion du nombre de LEd 8x8 (BUG A1) en créeant une fonction reinit qui nécessite tout de même de reseter le controleur pour que cela fonctionne
+ -=- BUG A2 : La gestion de l'offset négatif dans sendSmooth ne fonctionne pas correctement, rien de n'affiche pendant longtemps
+
+
 * 2017/06/06
   - Mise en place de la gestion des variable pour heure (<hh:mm:ss>) et date (<jj/mm/aa> et <jj/mm>)
   - Mise en place de la gestion du nombre de MAX7219 dans la tructure config et EEPROM,
-  -=- BUG : le nombre MAX7219 est bien sauvegardé, mais n'a pas l'aire d'etre pris en compte 
+  -=- BUG A1: le nombre MAX7219 est bien sauvegardé, mais n'a pas l'aire d'etre pris en compte 
         Peut etre du au faite de l'initialiser 2 fois pour que ce soit une variable globale
   - TODO : Ajouté a la page principale un bulle d'aide pour les variables et a terme les caractere spéciaux 
         ex : Train, température, pluie, soleil, .......

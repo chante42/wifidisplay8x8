@@ -3,10 +3,11 @@
 class MAX7219_Dot_Matrix
   {
   // pins
-  const byte chips_;
-  const byte load_;
-  const byte din_;
-  const byte clock_;
+  byte chips_;
+  byte load_;
+  byte din_;
+  byte clock_;
+  byte noFont;
   
 
   void sendByte (const byte reg, const byte data);
@@ -35,6 +36,8 @@ class MAX7219_Dot_Matrix
     ~MAX7219_Dot_Matrix ();  // destructor
     void begin ();
     void end ();
+    void reinit(const byte chips, const byte load);
+
 
     void sendChar (const byte pos, const byte data);
     void send64pixels (const byte pos, const byte data [8]);

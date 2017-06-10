@@ -85,16 +85,20 @@ Usage:
 
 */
 
-byte NoFont;
-
 // destructor
-MAX7219_Dot_Matrix::~MAX7219_Dot_Matrix ()
-  {
+MAX7219_Dot_Matrix::~MAX7219_Dot_Matrix () {
   end ();
-  } // end of destructor
+} // end of destructor
 
-void MAX7219_Dot_Matrix::begin ()
-  {
+void MAX7219_Dot_Matrix::reinit(const byte chips, const byte load) {
+  end();
+  this->chips_ = chips;
+  this->load_ = load;  
+
+  begin();
+}
+
+void MAX7219_Dot_Matrix::begin ()  {
   pinMode (load_, OUTPUT);
   digitalWrite (load_, HIGH);
 
@@ -119,67 +123,60 @@ void MAX7219_Dot_Matrix::begin ()
 
   // select the default defaultFont
   //
-  NoFont = 0;
+  this->noFont = 0;
 
-  } // end of MAX7219_Dot_Matrix::begin
+} // end of MAX7219_Dot_Matrix::begin
 
-void MAX7219_Dot_Matrix::selectFont (const byte noFont)
-  {
-    NoFont = noFont;
+void MAX7219_Dot_Matrix::selectFont (const byte noFont) {
+    this->noFont = noFont;
 
-  } // end of MAX7219_Dot_Matrix::selectFont
+} // end of MAX7219_Dot_Matrix::selectFont
 
-void MAX7219_Dot_Matrix::end ()
-  {
+void MAX7219_Dot_Matrix::end ()  {
   sendToAll (MAX7219_REG_SHUTDOWN, 0);  // shutdown mode (ie. turn it off)
     SPI.end ();
 
-  } // end of MAX7219_Dot_Matrix::end
+} // end of MAX7219_Dot_Matrix::end
 
-void MAX7219_Dot_Matrix::setIntensity (const byte amount)
-  {
+void MAX7219_Dot_Matrix::setIntensity (const byte amount)  {
   sendToAll (MAX7219_REG_INTENSITY, amount & 0xF);     // character intensity: range: 0 to 15
-  } // end of MAX7219_Dot_Matrix::setIntensity
+} // end of MAX7219_Dot_Matrix::setIntensity
 
 // send one byte to MAX7219
-void MAX7219_Dot_Matrix::sendByte (const byte reg, const byte data)
-  {
+void MAX7219_Dot_Matrix::sendByte (const byte reg, const byte data) {
     SPI.transfer (reg);
     SPI.transfer (data);
     
-  }  // end of sendByte
+}  // end of sendByte
 
-void MAX7219_Dot_Matrix::sendToAll (const byte reg, const byte data)
-  {
+void MAX7219_Dot_Matrix::sendToAll (const byte reg, const byte data) {
   digitalWrite (load_, LOW);
   for (byte chip = 0; chip < chips_; chip++)
     sendByte (reg, data);
   digitalWrite (load_, HIGH);
-  }  // end of sendToAll
+}  // end of sendToAll
 
-void MAX7219_Dot_Matrix::sendChar (const byte chip, const byte data)
-  {
+void MAX7219_Dot_Matrix::sendChar (const byte chip, const byte data) {
   // get this character 
   byte pixels [8];
-  if (NoFont == 0) {
+  if (this->noFont == 0) {
     for (byte i = 0; i < 8; i++)
       pixels [i] = MAX7219_Dot_Matrix_font_default [data] [i];
   }
-  else if (NoFont == 1) {
+  else if (this->noFont == 1) {
     for (byte i = 0; i < 8; i++)
       pixels [i] = MAX7219_Dot_Matrix_SINCLAIR_font [data] [i]; 
   }
-  else if (NoFont == 2) {
+  else if (this->noFont == 2) {
      for (byte i = 0; i < 8; i++)
       pixels [i] = MAX7219_Dot_Matrix_6pix_font [data] [i]; 
   }
 
   send64pixels (chip, pixels);
-  }  // end of sendChar
+}  // end of sendChar
 
 // send one character (data) to position (chip)
-void MAX7219_Dot_Matrix::send64pixels (const byte chip, const byte pixels [8])
-  {
+void MAX7219_Dot_Matrix::send64pixels (const byte chip, const byte pixels [8])  {
   for (byte col = 0; col < 8; col++)
     {
     // start sending
@@ -201,13 +198,12 @@ void MAX7219_Dot_Matrix::send64pixels (const byte chip, const byte pixels [8])
     
     digitalWrite (load_, HIGH);
     }   // end of for each column
-  }  // end of send64pixels
+}  // end of send64pixels
 
 
 
 // write an entire null-terminated string to the LEDs
-void MAX7219_Dot_Matrix::sendString (const char * s)
-{
+void MAX7219_Dot_Matrix::sendString (const char * s) {
   byte chip;
 
   for (chip = 0; chip < chips_ && *s; chip++){
@@ -220,8 +216,7 @@ void MAX7219_Dot_Matrix::sendString (const char * s)
 
 }  // end of sendString
 
-void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
-  {
+void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)  {
   int len = strlen (s);
   byte thisChip [3 * 8];  // pixels for current chip with allowance for one each side
   int firstByte = pixel / 8;
@@ -236,15 +231,15 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
     // get pixels to left of current character in case "pixel" is negative
     if (offset < 0)  {
       if (firstByte + chip - 1 >= 0 && firstByte + chip - 1 < len) {
-        if (NoFont == 0) {
+        if (this->noFont == 0) {
           for (byte i = 0; i < 8; i++)
              thisChip [i] = MAX7219_Dot_Matrix_font_default [s [firstByte  + chip - 1]] [i];
         } 
-        else if (NoFont == 1) {
+        else if (this->noFont == 1) {
           for (byte i = 0; i < 8; i++)
              thisChip [i] = MAX7219_Dot_Matrix_SINCLAIR_font [s [firstByte  + chip - 1]] [i];  
         }
-        else if (NoFont == 2) {
+        else if (this->noFont == 2) {
           for (byte i = 0; i < 5; i++)
              thisChip [i] = MAX7219_Dot_Matrix_6pix_font [s [firstByte  + chip - 1]] [i];  
         }
@@ -253,15 +248,15 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
 
     // get the current character
     if (firstByte + chip >= 0 && firstByte + chip < len) {
-      if (NoFont == 0) {
+      if (this->noFont == 0) {
         for (byte i = 0; i < 8; i++)
            thisChip [i + 8] = MAX7219_Dot_Matrix_font_default [s [firstByte + chip]] [i];
       }
-      else if (NoFont == 1) {
+      else if (this->noFont == 1) {
         for (byte i = 0; i < 8; i++)
            thisChip [i + 8] = MAX7219_Dot_Matrix_SINCLAIR_font [s [firstByte + chip]] [i];
       } 
-      else if (NoFont == 2) {
+      else if (this->noFont == 2) {
         for (byte i = 0; i < 5; i++)
            thisChip [i + 8] = MAX7219_Dot_Matrix_6pix_font [s [firstByte + chip]] [i];
       } 
@@ -270,15 +265,15 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
     // get pixels to right of current character in case "pixel" is positive
     if (offset > 0){
       if (firstByte + chip + 1 >= 0 && firstByte + chip + 1 < len) {
-        if (NoFont == 0) {
+        if (this->noFont == 0) {
           for (byte i = 0; i < 8; i++)
              thisChip [i + 16] = MAX7219_Dot_Matrix_font_default [s [firstByte + chip + 1]] [i];
         }
-        else if (NoFont == 1) {
+        else if (this->noFont == 1) {
           for (byte i = 0; i < 8; i++)
              thisChip [i + 16] = MAX7219_Dot_Matrix_SINCLAIR_font [s [firstByte + chip + 1]] [i];
         } 
-        else if (NoFont == 2) {
+        else if (this->noFont == 2) {
           for (byte i = 0; i < 5; i++)
              thisChip [i + 16] = MAX7219_Dot_Matrix_6pix_font [s [firstByte + chip + 1]] [i];
         } 
@@ -288,8 +283,6 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)
     // send the appropriate 8 pixels (offset will be from -7 to +7)
     send64pixels (chip, &thisChip [8 + offset]);  
     
-    
-
   } // for each chip
 
-  } // end of MAX7219_Dot_Matrix::sendSmooth
+} // end of MAX7219_Dot_Matrix::sendSmooth

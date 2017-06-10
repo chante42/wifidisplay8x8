@@ -44,6 +44,7 @@ Include the HTML, STYLE and Script "Pages"
 #define ACCESS_POINT_NAME  "ESP-LED-8x8"        
 #define ACCESS_POINT_PASSWORD  "12345678" 
 #define AdminTimeOut 120  // Defines the Time in Seconds, when the Admin-Mode will be diabled
+#define AdminTimeOut 15
 
 
 const byte NbMax7219 = 2;
@@ -218,7 +219,8 @@ void updateDisplay () {
 
   // next time show one pixel onwards
   if (messageOffset++ >= (int) (strlen (message) * 8)) {
-    messageOffset = - config.NbMax7219 * 8;   
+    //messageOffset = - config.NbMax7219 * 8;   
+    messageOffset = - config.NbMax7219;
     replaceVariable();
   }
 }  // end of updateDisplay
@@ -236,6 +238,9 @@ void replaceVariable() {
   strncpy(message, messageStringTmp.c_str(), MAXLENMESSAGE -1);
   message[messageStringTmp.length()] = '\0';
   message[MAXLENMESSAGE] = '\0';
+  Serial.print("message:|");
+  Serial.print(message);
+  Serial.println("|");
 }
 
 //
@@ -277,7 +282,7 @@ void setup () {
   Serial.print(config.NbMax7219);
   Serial.println("|");
   // 15 chips (display modules), hardware SPI with load on D10
-  MAX7219_Dot_Matrix display(config.NbMax7219, 2);  // Chips / LOAD
+  display.reinit(config.NbMax7219, 2);  // Chips / LOAD
   // MAX7219      NODEMCU
   // VCC          3.3v
   // GND          GND
@@ -285,8 +290,8 @@ void setup () {
   // CS :         D4
   // CLK          D5
 
-  display.begin ();
-
+  
+  replaceVariable();
   updateDisplay();
 
 
@@ -329,16 +334,11 @@ void setup () {
   tkSecond.attach(1,Second_Tick);
   UDPNTPClient.begin(2390);  // Port for NTP receive
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  
   if (strcmp(config.ssid.c_str(), "MYSSID") == 0) {
     messageString = "http://192.168.4.1/admin.html";
   }
   else {
-    messageString = "http" + WiFi.localIP().toString();
+    messageString = "Mode Admin : http://192.168.4.1/admin.html";
   }
   replaceVariable();
 
@@ -371,11 +371,11 @@ void loop () {
        WiFi.softAPdisconnect(true);
        WiFi.mode(WIFI_STA);
       WiFi.begin((const char *)config.ssid.c_str(), (const char *)config.password.c_str());
-      Serial.print("connection to: |");
-      Serial.print(config.ssid);
-      Serial.print("|  passwd: |");
-      Serial.print(config.password);
-      Serial.println("|");
+      //Serial.print("connection to: |");
+      //Serial.print(config.ssid);
+      //Serial.print("|  passwd: |");
+      //Serial.print(config.password);
+      //Serial.println("|");
 
       while (WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -386,6 +386,7 @@ void loop () {
       Serial.println("WiFi connected");
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
+      messageString = "Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
     }
   }
   if (config.Update_Time_Via_NTP_Every  > 0 )  {
