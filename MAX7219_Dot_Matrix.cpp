@@ -244,6 +244,7 @@ void MAX7219_Dot_Matrix::sendSmooth (const char * s, const int pixel)  {
              thisChip [i] = MAX7219_Dot_Matrix_6pix_font [s [firstByte  + chip - 1]] [i];  
         }
       }
+      
     }  // negative offset
 
     // get the current character

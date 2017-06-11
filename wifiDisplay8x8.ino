@@ -73,8 +73,6 @@ int PresenceVal = 0;
 unsigned long lastMoved = 0;
 unsigned long MOVE_INTERVAL = 30;  // mS
 
-int  messageOffset;
-
 
 #define MAXLENMESSAGE  200
 
@@ -213,15 +211,16 @@ void send_message_values_html()
 // updateDisplay
 //
 void updateDisplay () {
-  
+  static int  messageOffset;  
 
   display.sendSmooth (message, messageOffset);
 
   // next time show one pixel onwards
-  if (messageOffset++ >= (int) (strlen (message) * 8)) {
-    //messageOffset = - config.NbMax7219 * 8;   
-    messageOffset = - config.NbMax7219;
+  if (messageOffset++ >= (int) (strlen (message) *8)) {
+    messageOffset = - config.NbMax7219 * 8;   
     replaceVariable();
+    Serial.print("len mes :");
+    Serial.println((int) (strlen (message) * 8));
   }
 }  // end of updateDisplay
 
