@@ -1,22 +1,11 @@
-// Demo of MAX7219_Dot_Matrix library - sideways scrolling
-// Author: Nick Gammon
-// Date: 2 October 2015
+//
+//
+//
+//
+//
+//
+//
 
-// Scrolls a pixel at a time.
-// https://github.com/nickgammon/bitBangedSPI
-// https://github.com/SensorsIot/MAX7219-4-digit-display-Library-for-ESP8266-/tree/master/MAX7219_Dot_MatrixESP-master
-//
-// NTP Librairir cliente :
-// https://github.com/arduino-libraries/NTPClient
-
-// A explorer la gestion de la consomation electrique
-//
-// A explorer pout l'auto config Wifi
-// https://github.com/tzapu/WiFiManager/blob/master/examples/AutoConnectWithFeedback/AutoConnectWithFeedback.ino
-//
-// https://www.john-lassen.de/en/projects/esp-8266-arduino-ide-webconfig
-//
-//
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Ticker.h>
@@ -44,7 +33,7 @@ Include the HTML, STYLE and Script "Pages"
 #define ACCESS_POINT_NAME  "ESP-LED-8x8"        
 #define ACCESS_POINT_PASSWORD  "12345678" 
 #define AdminTimeOut 120  // Defines the Time in Seconds, when the Admin-Mode will be diabled
-#define AdminTimeOut 15
+//#define AdminTimeOut 15
 
 
 const byte NbMax7219 = 2;
@@ -261,7 +250,7 @@ void setup () {
     config.IP[0]          = 192;config.IP[1] = 168;config.IP[2] = 1;config.IP[3] = 100;
     config.Netmask[0]     = 255;config.Netmask[1] = 255;config.Netmask[2] = 255;config.Netmask[3] = 0;
     config.Gateway[0]     = 192;config.Gateway[1] = 168;config.Gateway[2] = 1;config.Gateway[3] = 1;
-    config.ntpServerName  = "0.de.pool.ntp.org";
+    config.ntpServerName  = "0.pool.ntp.org";
     config.Update_Time_Via_NTP_Every =  0;
     config.timezone       = -10;
     config.daylight       = true;
@@ -308,23 +297,27 @@ void setup () {
   
 
   //server.on ( "/", processExample  );
-  server.on("/", []() { Serial.println("message.html"); server.send ( 200, "text/html", PAGE_Message );   }  );
-  server.on("/getCurrentMessage", send_message_values_html);
-  server.on("/submit", handleSubmitPage);
-  server.on ( "/favicon.ico",   []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
-  server.on ( "/admin.html", []() { Serial.println("admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );   }  );
-  server.on ( "/config.html", send_network_configuration_html );
-  server.on ( "/info.html", []() { Serial.println("info.html"); server.send ( 200, "text/html", PAGE_Information );   }  );
-  server.on ( "/ntp.html", send_NTP_configuration_html  );
-  server.on ( "/general.html", send_general_html  );
-  server.on ( "/style.css", []() { Serial.println("style.css"); server.send ( 200, "text/css", PAGE_Style_css );  } );
-  server.on ( "/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "application/javascript", PAGE_microajax_js );  } );
-  server.on ( "/admin/values", send_network_configuration_values_html );
-  server.on ( "/admin/connectionstate", send_connection_state_values_html );
-  server.on ( "/admin/infovalues", send_information_values_html );
-  server.on ( "/admin/ntpvalues", send_NTP_configuration_values_html );
-  server.on ( "/admin/generalvalues", send_general_configuration_values_html);
-  server.on ( "/admin/devicename",     send_devicename_value_html);
+  //  http:xx.xx.xx.xx/message.html test si mode admin et dans ce cas redirect sur admin.html
+  server.on ("/",             []() {  if (!AdminEnabled) { Serial.println("/ REDIRECT message.html"); server.send ( 200, "text/html", PAGE_Message );} else {Serial.println("/ Redirecte admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );}   }  );
+  server.on ("/message.html", []() { Serial.println("message.html"); server.send ( 200, "text/html", PAGE_Message );   }  );
+  server.on ("/mes.html",     []() { Serial.println("message.html"); server.send ( 200, "text/html", PAGE_Message );   }  );
+
+  server.on ("/getCurrentMessage", send_message_values_html);
+  server.on ("/submit",       handleSubmitPage);
+  server.on ("/favicon.ico",  []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
+  server.on ("/admin.html",   []() { Serial.println("admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );   }  );
+  server.on ("/config.html",  send_network_configuration_html );
+  server.on ("/info.html",    []() { Serial.println("info.html"); server.send ( 200, "text/html", PAGE_Information );   }  );
+  server.on ("/ntp.html",     send_NTP_configuration_html  );
+  server.on ("/general.html", send_general_html  );
+  server.on ("/style.css",    []() { Serial.println("style.css"); server.send ( 200, "text/css", PAGE_Style_css );  } );
+  server.on ("/microajax.js", []() { Serial.println("microajax.js"); server.send ( 200, "application/javascript", PAGE_microajax_js );  } );
+  server.on ("/admin/values", send_network_configuration_values_html );
+  server.on ("/admin/connectionstate", send_connection_state_values_html );
+  server.on ("/admin/infovalues", send_information_values_html );
+  server.on ("/admin/ntpvalues", send_NTP_configuration_values_html );
+  server.on ("/admin/generalvalues", send_general_configuration_values_html);
+  server.on ("/admin/devicename",     send_devicename_value_html);
   server.onNotFound ( []() { Serial.println("Page Not Found"); server.send ( 400, "text/html", "Page not Found" );   }  );
   server.begin();
 
@@ -333,12 +326,7 @@ void setup () {
   tkSecond.attach(1,Second_Tick);
   UDPNTPClient.begin(2390);  // Port for NTP receive
 
-  if (strcmp(config.ssid.c_str(), "MYSSID") == 0) {
-    messageString = "http://192.168.4.1/admin.html";
-  }
-  else {
-    messageString = "Mode Admin : http://192.168.4.1/admin.html";
-  }
+  messageString = "Mode Admin, SSID:'"+(String)ACCESS_POINT_NAME+"',password:'"+(String)ACCESS_POINT_PASSWORD+"' http://192.168.4.1";
   replaceVariable();
 
   Serial.printf("Web server started, open %s in a web browser\n", WiFi.localIP().toString().c_str());
@@ -385,7 +373,8 @@ void loop () {
       Serial.println("WiFi connected");
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
-      messageString = "Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
+      messageString = "http://"+WiFi.localIP().toString() +"/mes.html, Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
+
     }
   }
   if (config.Update_Time_Via_NTP_Every  > 0 )  {

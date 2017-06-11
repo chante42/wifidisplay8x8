@@ -12,12 +12,12 @@ const char PAGE_AdminGeneralSettings[] PROGMEM =  R"=====(
 <form action="" method="post">
 <table border="0"  cellspacing="0" cellpadding="3" >
 <tr>
-	<td align="right">Name of Device</td>
+	<td align="right">Name of Device :</td>
 	<td><input type="text" id="devicename" name="devicename" size="31" maxlength="31" value=""></td>
 </tr>
 
 <tr>
-	<td align="right">Number of MAX7219</td>
+	<td align="right">Number of MAX7219 :</td>
 	<td><input type="text" id="nbmax7219" name="nbmax7219" size="2" maxlength="2" value="2"></td>
 </tr>
 
@@ -48,6 +48,7 @@ const char PAGE_AdminGeneralSettings[] PROGMEM =  R"=====(
 	<td align="right"> Time:</td>
 	<td><input type="text" id="toffhour" name="toffhour" size="2" value="00">:<input type="text" id="toffminute" name="toffminute" size="2" value="00"></td>
 </tr>
+<tr><br></tr>
 <tr><td colspan="2" align="center"><input type="submit" style="width:150px" class="btn btn--m btn--blue" value="Save"></td></tr>
 </table>
 </form>

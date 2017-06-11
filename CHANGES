@@ -1,6 +1,8 @@
 * 2017/06/11
  - LE bug A2 est corrigé, mais j'ai pas compris
-
+ - http://a.b.c.d redirige soit sur admin.html en mode admin ou message.html dans l'autre cas.
+ - affiche un info bulle pour expliquer les variable sur le champe "Message a afficher"
+ 
 * 2017/06/10
  - Mise en Place de la Variable NoFont, en tant que variable de la classe MAX7219_Dot_Matrix
  - Correction de la gestion du nombre de LEd 8x8 (BUG A1) en créeant une fonction reinit qui nécessite tout de même de reseter le controleur pour que cela fonctionne

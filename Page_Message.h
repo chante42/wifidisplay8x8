@@ -22,7 +22,14 @@ const char PAGE_Message[] PROGMEM = R"=====(
       <div id='title'>Message</div>
       <hr>
       <form action='submit' method='GET'>
-        <p>Message à afficher:</p><input id='message' type='text' name='message' maxlength="200" size="40"><br>
+        <p><div class="infoBulle" href="">Message à afficher:
+           <span><h3>les variables spéciales</h3>
+            <p>&lsaquo;jj/mm/aa&rsaquo; : Affiche la date courante selon le format de la balise</p>
+            <p>&lsaquo;hh:mm:ss&rsaquo; : Affiche l'heure courante selon le format de la balise</p>
+           </span>
+          </div>
+        </p>
+        <input id='message' type='text' name='message' maxlength="200" size="40"><br>
         
         <p>Vitesse :
         <select  id='vitesse' name='vitesse'>
@@ -75,9 +82,10 @@ const char PAGE_Message[] PROGMEM = R"=====(
           <option value="2">5x5</option>
         </select></p><br>
         
-        <input type='submit' value='Submit'><br>
+        <input type='submit' value='Submit' style='width:150px' class='btn btn--m btn--blue'><br>
       </form>
-
+      <hr>
+      <a href='admin.html' class='bottom'>page d'administration</a>
       <script>                
         window.onload = function (){
         

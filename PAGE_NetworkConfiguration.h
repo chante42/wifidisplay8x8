@@ -12,7 +12,7 @@ const char PAGE_NetworkConfiguration[] PROGMEM = R"=====(
 <hr>
 Connect to Router with these settings:<br>
 <form action="" method="get">
-<table border="0"  cellspacing="0" cellpadding="3" style="width:320px" >
+<table border="0"  cellspacing="0" cellpadding="3" style="width:330px" >
 <tr><td align="right">SSID:</td><td><input type="text" id="ssid" name="ssid" maxlength="31" value=""></td></tr>
 <tr><td align="right">Password:</td><td><input type="text" id="password" name="password" maxlength="31" value=""></td></tr>
 <tr><td align="right">DHCP:</td><td><input type="checkbox" id="dhcp" name="dhcp"></td></tr>

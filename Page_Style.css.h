@@ -75,9 +75,54 @@ select 	{ color : #fa0909; background-color: #101010; border:solid 1px white; bo
 	background-color: #001F3F;  border-color: #001F3F; 
 }
 
+.bottom {
+	font-size: 10px; 
+}
 @media screen and (min-width: 32em) {
 	.btn--full {  
 	max-width: 16em !important; } 
+}
+.infoBulle
+{
+  text-decoration:none;
+  position:relative;
+}
+ 
+ 
+.infoBulle span
+{
+  display:none;
+ 
+  -moz-border-radius:6px;
+  -webkit-border-radius:6px;
+  border-radius:6px;
+  color:black;
+  background:white; 
+}
+ 
+ 
+.infoBulle span img
+{
+  float:left;
+  margin:0px 8px 8px 0;
+}
+ 
+ 
+.infoBulle:hover span
+{
+  display:block;
+  position:absolute;
+  top:0;
+  left:0;
+  z-index:1000;
+  width:auto;
+  max-width:320px;
+  min-height:128px;
+  border:1px solid black;
+  margin-top:12px;
+  margin-left:32px;
+  overflow:hidden;
+  padding:8px;
 }
 )=====";
  
