@@ -373,7 +373,7 @@ void loop () {
       Serial.println("WiFi connected");
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
-      messageString = "http://"+WiFi.localIP().toString() +"/mes.html, Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
+      messageString = "http://"+WiFi.localIP().toString() +", Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
 
     }
   }

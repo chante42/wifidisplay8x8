@@ -82,12 +82,13 @@ select 	{ color : #fa0909; background-color: #101010; border:solid 1px white; bo
 	.btn--full {  
 	max-width: 16em !important; } 
 }
+
+
 .infoBulle
 {
   text-decoration:none;
   position:relative;
 }
- 
  
 .infoBulle span
 {
@@ -100,13 +101,11 @@ select 	{ color : #fa0909; background-color: #101010; border:solid 1px white; bo
   background:white; 
 }
  
- 
 .infoBulle span img
 {
   float:left;
   margin:0px 8px 8px 0;
 }
- 
  
 .infoBulle:hover span
 {
@@ -123,6 +122,7 @@ select 	{ color : #fa0909; background-color: #101010; border:solid 1px white; bo
   margin-left:32px;
   overflow:hidden;
   padding:8px;
+  font-size : 10px;
 }
 )=====";
  
