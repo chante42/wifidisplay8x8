@@ -3,7 +3,9 @@
 //
 //
 //
-//
+//  ARDUINO :
+// il faut ajouter la librairy (Croquis-> Inclure une bibliothèque -> Ajouter la bibliothèque en .ZIP)
+//     https://github.com/nickgammon/bitBangedSPI
 //
 
 #include <ESP8266WiFi.h>
@@ -53,14 +55,15 @@ MAX7219_Dot_Matrix display(NbMax7219, 2);  // Chips / LOAD
 //
 //  CAPTEUR      NODEMCU
 //  2 (centre)   D6  - - GPIO12
-int PresencePin = D6;
-int PresenceState = LOW;             // we start, assuming no motion detected
-int PresenceVal = 0;
+int PresencePin     = D6;
+int PresenceState   = LOW;             // we start, assuming no motion detected
+int PresenceVal     = 0;
 
 //
 // Variable Globale
-unsigned long lastMoved = 0;
-unsigned long MOVE_INTERVAL = 30;  // mS
+unsigned long lastMoved           = 0;
+unsigned long MOVE_INTERVAL       = 30;  // mS
+unsigned short WifiConnectTimeOut = 20; // 60*500 ms 
 
 
 #define MAXLENMESSAGE  200
@@ -81,6 +84,9 @@ int Fonte = 0;
 #define STATE_LOWPOWER  2
 #define STATE_SLEEP     3
 byte GlobalState = STATE_NORMAL;
+
+// éclaration de fonction :
+void replaceVariable();
 
 //
 // Page envoyer lors GET Submit
@@ -321,7 +327,7 @@ void setup () {
   server.onNotFound ( []() { Serial.println("Page Not Found"); server.send ( 400, "text/html", "Page not Found" );   }  );
   server.begin();
 
-  Serial.println( "HTTP server started" );
+  Serial.println( "HTTP server started Pierre et vacances" );
 
   tkSecond.attach(1,Second_Tick);
   UDPNTPClient.begin(2390);  // Port for NTP receive
@@ -357,26 +363,36 @@ void loop () {
        WiFi.disconnect();
        WiFi.softAPdisconnect(true);
        WiFi.mode(WIFI_STA);
-      WiFi.begin((const char *)config.ssid.c_str(), (const char *)config.password.c_str());
+       WiFi.begin((const char *)config.ssid.c_str(), (const char *)config.password.c_str());
       //Serial.print("connection to: |");
       //Serial.print(config.ssid);
       //Serial.print("|  passwd: |");
       //Serial.print(config.password);
       //Serial.println("|");
 
-      while (WiFi.status() != WL_CONNECTED) {
+      while (WiFi.status() != WL_CONNECTED && WifiConnectTimeOut > 0 ) {
         delay(500);
         Serial.print(".");
+        WifiConnectTimeOut--;
       }
 
-      Serial.println("");
-      Serial.println("WiFi connected");
-      Serial.println("IP address: ");
-      Serial.println(WiFi.localIP());
-      messageString = "http://"+WiFi.localIP().toString() +", Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
+      if (WifiConnectTimeOut != 0) {
+        Serial.println("");
+        Serial.println("WiFi connected");
+        Serial.println("IP address: ");
+        Serial.println(WiFi.localIP());
+        messageString = "http://"+WiFi.localIP().toString() +", Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
+      }
+      else {
+        AdminEnabled = true;
+        AdminTimeOutCounter = 0;
+        WifiConnectTimeOut = 20;
+        Serial.print("Impossible de se connecté au wifi, retour en mode Admin");
+      }
+      
 
-    }
-  }
+    } // FIN if AdminTimeOutCounter > AdminTimeOut
+  } // fin IF  AdminEnable
   if (config.Update_Time_Via_NTP_Every  > 0 )  {
     if (cNTP_Update > 5 && firstStart)    {
       NTPRefresh();

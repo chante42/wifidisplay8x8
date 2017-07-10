@@ -1,5 +1,8 @@
 #include <Arduino.h>
 
+#ifndef MAX7219_H
+#define MAX7219_H
+
 class MAX7219_Dot_Matrix
   {
   // pins
@@ -49,3 +52,4 @@ class MAX7219_Dot_Matrix
   static const byte HYPHEN = 0b0000001;
 
   }; // end of class MAX7219_Dot_Matrix
+#endif
