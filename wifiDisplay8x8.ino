@@ -34,7 +34,8 @@ Include the HTML, STYLE and Script "Pages"
 
 #define ACCESS_POINT_NAME  "ESP-LED-8x8"        
 #define ACCESS_POINT_PASSWORD  "12345678" 
-#define AdminTimeOut 120  // Defines the Time in Seconds, when the Admin-Mode will be diabled
+//#define AdminTimeOut 120  // Defines the Time in Seconds, when the Admin-Mode will be diabled
+#define AdminTimeOut 1000  // Defines the Time in Seconds, when the Admin-Mode will be diabled
 //#define AdminTimeOut 15
 
 
@@ -387,7 +388,8 @@ void loop () {
         AdminEnabled = true;
         AdminTimeOutCounter = 0;
         WifiConnectTimeOut = 20;
-        Serial.print("Impossible de se connecté au wifi, retour en mode Admin");
+        Serial.println("");
+        Serial.println("Impossible de se connecté au wifi, retour en mode Admin");
       }
       
 
