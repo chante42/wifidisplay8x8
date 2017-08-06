@@ -29,7 +29,7 @@ boolean summertime(int year, byte month, byte day, byte hour, byte tzHours)
 {
  if (month<3 || month>10) return false; // keine Sommerzeit in Jan, Feb, Nov, Dez
  if (month>3 && month<10) return true; // Sommerzeit in Apr, Mai, Jun, Jul, Aug, Sep
- if (month==3 && (hour + 24 * day)>=(1 + tzHours + 24*(31 - (5 * year /4 + 4) % 7)) || month==10 && (hour + 24 * day)<(1 + tzHours + 24*(31 - (5 * year /4 + 1) % 7)))
+ if ( ( (month==3) && ((hour + 24 * day)>=(1 + tzHours + 24*(31 - (5 * year /4 + 4) % 7))) ) || ((month==10) && ( (hour + 24 * day)<(1 + tzHours + 24*(31 - (5 * year /4 + 1) % 7)))) )
    return true;
  else
    return false;
@@ -55,7 +55,7 @@ void WriteStringToEEPROM(int beginaddress, String string)
 {
 	char  charBuf[string.length()+1];
 	string.toCharArray(charBuf, string.length()+1);
-	for (int t=  0; t<sizeof(charBuf);t++)
+	for (unsigned int t=  0; t<sizeof(charBuf);t++)
 	{
 			EEPROM.write(beginaddress + t,charBuf[t]);
 	}
@@ -208,3 +208,4 @@ String urldecode(String input) // (based on https://code.google.com/p/avr-netino
 
  
 #endif
+

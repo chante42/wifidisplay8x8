@@ -16,7 +16,7 @@ const char PAGE_AdminMainPage[] PROGMEM = R"=====(
 <a href="ntp.html"   style="width:250px"  class="btn btn--m btn--blue" >NTP Settings</a><br>
 
 <hr>
-      <a href='admin.html' class='bottom'>page de gestion de l'affichage</a>
+      <a href='message.html' class='bottom'>page de gestion de l'affichage</a>
 <script>
 window.onload = function ()
 {
@@ -27,5 +27,6 @@ function load(e,t,n){if("js"==t){var a=document.createElement("script");a.src=e,
 </script>
 
 )=====";
+
 
 

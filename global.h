@@ -1,17 +1,17 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-ESP8266WebServer 			server(80);	// The Webserver
-boolean firstStart 			= true;		// On firststart = true, NTP will try to get a valid time
-int AdminTimeOutCounter 	= 0;		// Counter for Disabling the AdminMode
-strDateTime DateTime;					// Global DateTime structure, will be refreshed every Second
-WiFiUDP UDPNTPClient;					// NTP Client
-unsigned long UnixTimestamp = 0;		// GLOBALTIME  ( Will be set by NTP)
-boolean Refresh 			= false; 	// For Main Loop, to refresh things like GPIO / WS2812
-int cNTP_Update 			= 0;		// Counter for Updating the time via NTP
-Ticker tkSecond;						// Second - Timer for Updating Datetime Structure
-boolean AdminEnabled 		= true;		// Enable Admin Mode for a given Time
-byte Minute_Old 			= 100;		// Helpvariable for checking, when a new Minute comes up (for Auto Turn On / Off)
+ESP8266WebServer 			        server(80);	// The Webserver
+boolean firstStart 			      = true;		// On firststart = true, NTP will try to get a valid time
+int AdminTimeOutCounter 	    = ADMIN_TIMEOUT;		// Counter for Disabling the AdminMode
+strDateTime DateTime;					        // Global DateTime structure, will be refreshed every Second
+WiFiUDP UDPNTPClient;					        // NTP Client
+unsigned long UnixTimestamp   = 0;		// GLOBALTIME  ( Will be set by NTP)
+boolean Refresh 			        = false; 	// For Main Loop, to refresh things like GPIO / WS2812
+int cNTP_Update 			        = 0;		// Counter for Updating the time via NTP
+Ticker tkSecond;						          // Second - Timer for Updating Datetime Structure
+boolean AdminEnabled 		      = true;		// Enable Admin Mode for a given Time
+byte Minute_Old 			        = 100;		// Helpvariable for checking, when a new Minute comes up (for Auto Turn On / Off)
 
 
 struct strConfig {
@@ -46,12 +46,23 @@ struct strConfig {
 */
 void ConfigureWifi()
 {
-	Serial.println("Configuring Wifi");
-	WiFi.begin (config.ssid.c_str(), config.password.c_str());
-	if (!config.dhcp)
-	{
-		WiFi.config(IPAddress(config.IP[0],config.IP[1],config.IP[2],config.IP[3] ),  IPAddress(config.Gateway[0],config.Gateway[1],config.Gateway[2],config.Gateway[3] ) , IPAddress(config.Netmask[0],config.Netmask[1],config.Netmask[2],config.Netmask[3] ));
-	}
+  Serial.println("Configuring Wifi");
+
+  if (AdminEnabled)  {
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
+    Serial.println("ConfigureWifi : Mode AP enable");
+  }
+  else  {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin (config.ssid.c_str(), config.password.c_str());
+    if (!config.dhcp) {
+      WiFi.config(IPAddress(config.IP[0],config.IP[1],config.IP[2],config.IP[3] ),  IPAddress(config.Gateway[0],config.Gateway[1],config.Gateway[2],config.Gateway[3] ) , IPAddress(config.Netmask[0],config.Netmask[1],config.Netmask[2],config.Netmask[3] ));
+    }
+    else {
+      
+    } //  FIN ELSE DHCP
+  } // FIN ELSE ADMINENABLED
 }
 
 void WriteConfig()
@@ -151,6 +162,7 @@ boolean ReadConfig()
 		config.TurnOffHour 		= EEPROM.read(304);
 		config.TurnOffMinute 	= EEPROM.read(305);
 		config.DeviceName		= ReadStringFromEEPROM(306);
+    
 		return true;
 		
 	}
@@ -240,3 +252,4 @@ void Second_Tick()
  
 
 #endif
+

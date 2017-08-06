@@ -22,7 +22,7 @@ const char PAGE_Message[] PROGMEM = R"=====(
       <div id='title'>Message</div>
       <hr>
       <form action='submit' method='GET'>
-        <p><div class="infoBulle" href="">Message à afficher:
+        <p><div class="infoBulle" href="">Message à  afficher:
            <span><h3>les variables spéciales</h3>
             <p>&lsaquo;jj/mm/aa&rsaquo; : Affiche la date courante selon le format de la balise</p>
             <p>&lsaquo;hh:mm:ss&rsaquo; : Affiche l'heure courante selon le format de la balise</p>
@@ -44,7 +44,7 @@ const char PAGE_Message[] PROGMEM = R"=====(
 
         <p>Luminositée :
         <select  id='luminosite' name='luminosite'>
-          <option value="-1">éteindre</option>
+          <option value="-1">Eteindre</option>
           <option value="0">0</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -78,9 +78,18 @@ const char PAGE_Message[] PROGMEM = R"=====(
         <p>font :
         <select  id='font' name='font'>
           <option value="0">default</option>
-          <option value="1">8x8 light</option>
-          <option value="2">5x5</option>
+          <option value="1">SINCLAIR_8x8</option>
+          <option value="2">font_bold_8x8</option>
+          <option value="3">font_6x8</option>
         </select></p><br>
+        
+        <p>Rotation :
+        <select  id='rotation' name='rotation'>
+          <option value="0">Normal</option>
+          <option value="90">90° droite </option>
+          <option value="180">180 <option>
+          <option value="300">320</option>
+        </select></p>
         
         <input type='submit' value='Submit' style='width:150px' class='btn btn--m btn--blue'><br>
       </form>
@@ -118,4 +127,5 @@ void processExample()
     }
     server.send ( 200, "text/html", ""  ); 
 }
+
 
