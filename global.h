@@ -3,7 +3,7 @@
 
 ESP8266WebServer 			        server(80);	// The Webserver
 boolean firstStart 			      = true;		// On firststart = true, NTP will try to get a valid time
-int AdminTimeOutCounter 	    = ADMIN_TIMEOUT;		// Counter for Disabling the AdminMode
+int AdminTimeOutCounter 	    = ADMIN_TIMEOUT +1 ;		// Counter for Disabling the AdminMode, initialiser pour qu'il essais directe de se connecté avec les infos en mémoire.
 strDateTime DateTime;					        // Global DateTime structure, will be refreshed every Second
 WiFiUDP UDPNTPClient;					        // NTP Client
 unsigned long UnixTimestamp   = 0;		// GLOBALTIME  ( Will be set by NTP)
@@ -44,25 +44,14 @@ struct strConfig {
 ** CONFIGURATION HANDLING
 **
 */
-void ConfigureWifi()
+void ConfigureWifiAPMode()
 {
-  Serial.println("Configuring Wifi");
-
-  if (AdminEnabled)  {
-    WiFi.mode(WIFI_AP_STA);
-    WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
-    Serial.println("ConfigureWifi : Mode AP enable");
-  }
-  else  {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin (config.ssid.c_str(), config.password.c_str());
-    if (!config.dhcp) {
-      WiFi.config(IPAddress(config.IP[0],config.IP[1],config.IP[2],config.IP[3] ),  IPAddress(config.Gateway[0],config.Gateway[1],config.Gateway[2],config.Gateway[3] ) , IPAddress(config.Netmask[0],config.Netmask[1],config.Netmask[2],config.Netmask[3] ));
-    }
-    else {
-      
-    } //  FIN ELSE DHCP
-  } // FIN ELSE ADMINENABLED
+  Serial.print("Configuring Wifi");
+  
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP( ACCESS_POINT_NAME , ACCESS_POINT_PASSWORD);
+  Serial.println("Mode AP enable.");
+  
 }
 
 void WriteConfig()

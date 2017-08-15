@@ -97,8 +97,9 @@ void send_network_configuration_html()
 		}
 		 server.send ( 200, "text/html", PAGE_WaitAndReload );
 		WriteConfig();
-		ConfigureWifi();
-		AdminTimeOutCounter=0;
+
+    // Bascule le mode wifi pour tester tous de suite.
+    AdminTimeOutCounter = ADMIN_TIMEOUT +1;
 		
 	}
 	else

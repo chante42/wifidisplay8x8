@@ -24,8 +24,8 @@ void toto(){
 #include <Wire.h>  // This library is already built in to the Arduino IDE
 #define ACCESS_POINT_NAME  "ESP-LED-8x8"        
 #define ACCESS_POINT_PASSWORD  "12345678" 
-//#define ADMIN_TIMEOUT 600  // Defines the Time in Seconds, when the Admin-Mode will be diabled
-#define ADMIN_TIMEOUT 60
+#define ADMIN_TIMEOUT 600  // Defines the Time in Seconds, when the Admin-Mode will be diabled
+//#define ADMIN_TIMEOUT 60
 
 
 #include "helpers.h"
@@ -74,7 +74,7 @@ struct LineDefinition {
 // need to be adapted
 struct LineDefinition  Line[] =
 {
-  { MD_Parola(D4, MAX_DEVICES), "abc", false }
+  { MD_Parola(D4, MAX_DEVICES), "", false }
 };
 
 #define MAX_LINES   (sizeof(Line)/sizeof(LineDefinition))
@@ -97,13 +97,13 @@ int PresenceVal     = 0;
 //
 // Variable Globale
 #define WIFI_CONNECTION_TIMEOUT_DEFAULT 60 // 60*500 ms 
-unsigned short WifiConnectTimeOut = 0;
+unsigned short WifiConnectTimeOut = WIFI_CONNECTION_TIMEOUT_DEFAULT;
 
 //WiFiServer server(80);
 //ESP8266WebServer server(80); dans global.h
 
 char  Message [MAXLENMESSAGE] ;
-String messageString = "Olivier Chanteloup 2017/04/24  eÃ© eÃ¨ aÃ ";
+String messageString;
 
 
 int Luminosite = 15;
@@ -116,13 +116,15 @@ int Fonte = 0;
 #define STATE_SLEEP     3
 byte GlobalState = STATE_NORMAL;
 
+// permet de savoir s'il on doit mettre a jours l'heure
+unsigned int LastReplaceVariableTimestamp = 0;
 // DÃ©claration de fonction :
 void replaceVariable(void);
 
 //
-// Page envoyer lors GET Submit
+// Page envoyer lors GET 
 //
-void handleSubmitPage() {
+void handleMessagePage() {
   String tmp = "";
   if (server.args() > 0 ) {
     for ( uint8_t i = 0; i < server.args(); i++ ) {
@@ -167,9 +169,8 @@ void handleSubmitPage() {
         tmp += "<p>Message :'" + String(Message) + "' envoyÃ©</p><br>";
 
         messageString = String(Message);
-        replaceVariable();
-        //strcpy(Line[0].curMessage,Message);
         Line[0].newMessageAvailable = true;
+        Line[0].P.displayClear();
       } //fin if Message
 
       if (server.argName(i) == "vitesse" and server.arg("vitesse") != "" ) {
@@ -204,7 +205,7 @@ void handleSubmitPage() {
           Line[0].P.setIntensity(Luminosite);
           Line[0].P.displayShutdown(false);
           Line[0].P.displaySuspend(false);
-          Line[0].P.displayReset();
+          Line[0].P.displayClear();
         } // fin if
         else if (Luminosite == -1 ) { // Passe en mode eteinte
           Line[0].P.displaySuspend(true);
@@ -226,7 +227,7 @@ void handleSubmitPage() {
 
   server.send(200, "text/html", PAGE_Message);
 
-}// FIN handleSubmitPage()
+}// FIN handleMessagePage()
 
 //
 //   FILL THE PAGE WITH VALUES
@@ -238,21 +239,26 @@ void send_message_values_html()
   char luminosite_s[5];
   char timerPresence_s[5];
   char fonte_s[5];
+  char vitesse_s[5];
   String values ="";
   // s'il y a des caractere accentuÃ©, il y a un Pb de rÃ©afichage dans la page html
-  //values += "message|"        + (String)  message            +"|input\n";
-  values += "vitesse|"        + (String) Line[0].P.getSpeed() + "|input\n";
+  values += "message|"        + (String)  messageString            +"|input\n";
+  values += "vitesse|"        + (String) itoa(Line[0].P.getSpeed(), vitesse_s, 10) + "|input\n";
   values += "luminosite|"     + (String) itoa(Luminosite, luminosite_s,10)    + "|input\n";
   values += "timer_presence|" + (String) itoa(TimerPresence, timerPresence_s,10) + "|input\n";
   values += "font|"           + (String) itoa(Fonte, fonte_s,10)         + "|input\n";
   server.send ( 200, "text/plain", values);
+  Serial.print("Vitesse : |");
+  Serial.print(Line[0].P.getSpeed());
+  Serial.println("|");
+  Serial.print("IN : ");
   Serial.println(__FUNCTION__); 
   
 }
 
 //
 // updateDisplay
-//
+//  
 void updateDisplay () {
 
   for (uint8_t i=0; i<MAX_LINES; i++)
@@ -264,10 +270,9 @@ void updateDisplay () {
       {
         strcpy(Line[i].curMessage, Message);
         Line[i].newMessageAvailable = false;
-        PRINT("\nLine ", i);
-        PRINT(" msg: \n", Line[i].curMessage);
       }
       Line[i].P.displayReset();
+
     }
   }
 
@@ -280,14 +285,14 @@ void replaceVariable(void) {
   String messageStringTmp;
 
   messageStringTmp = messageString;
-  Serial.printf("\nmessageStringTmp : %s\n", messageStringTmp.c_str());
+  //Serial.printf("\nmessageStringTmp : %s\n", messageStringTmp.c_str());
   messageStringTmp.replace("<hh:mm:ss>", (String) DateTime.hour + ":" + (String) + DateTime.minute +  ":"  + (String)  DateTime.second );
   messageStringTmp.replace("<jj/mm/aa>", (String) DateTime.day  + "/" + (String)  DateTime.month + "/" + (String)  DateTime.year );
   messageStringTmp.replace("<jj/mm>", (String) DateTime.day  + "/" + (String)  DateTime.month  );
   strncpy(Message, messageStringTmp.c_str(), MAXLENMESSAGE -1);
   Message[messageStringTmp.length()] = '\0';
   Message[MAXLENMESSAGE] = '\0';
-  PRINTS("message:|");
+  PRINTS("Replace Variable message:|");
   PRINTS(Message);
   PRINTS("|\n");
   Line[0].newMessageAvailable = true;
@@ -310,10 +315,10 @@ void setup () {
   EEPROM.begin(512);
   delay(500);
   Serial.println("Starting ES8266");
-  if (!ReadConfig())  {
+  if ( !ReadConfig())  {
     // DEFAULT CONFIG
-    config.ssid                       = "freebox_tourettes";
-    config.password                   = "AlbanGabriel";
+    config.ssid                       = "iPhone de Olivier";
+    config.password                   = "d63zqepjq4g7f";
     config.dhcp                       = true;
     config.IP[0]                      = 192;config.IP[1] = 168;config.IP[2] = 1;config.IP[3] = 100;
     config.Netmask[0]                 = 255;config.Netmask[1] = 255;config.Netmask[2] = 255;config.Netmask[3] = 0;
@@ -343,29 +348,11 @@ void setup () {
   PRINTS("WIFI PASSWAORD : |");
   Serial.print(config.password);
   PRINTS("|\n");
-  for (uint8_t i=0; i<MAX_LINES; i++)
-  {
-    Line[i].P.begin();
-    Line[i].P.displayClear();
-    Line[i].P.displaySuspend(false);
-
-    Line[i].P.displayScroll(Line[i].curMessage, PA_LEFT, scrollEffect, frameDelay);
-
-    strcpy(Line[i].curMessage, "Hello! Led 8 x 8 ");
-  }
   
   
   Serial.print("\n[Parola Scrolling Display Multi Line]\n");
   Serial.print(MAX_LINES);
   Serial.print(" lines\nType a message for the scrolling display\nStart message with display number\nEnd message line with a newline");
-
-
-  
-  replaceVariable();
-  updateDisplay();
-
-  ConfigureWifi();
-  
 
   //server.on ( "/", processExample  );
   //  http:xx.xx.xx.xx/message.html test si mode admin et dans ce cas redirect sur admin.html
@@ -374,7 +361,7 @@ void setup () {
   server.on ("/mes.html",     []() { Serial.println("message.html"); server.send ( 200, "text/html", PAGE_Message );   }  );
 
   server.on ("/getCurrentMessage", send_message_values_html);
-  server.on ("/submit",       handleSubmitPage);
+  server.on ("/messageSubmit",       handleMessagePage);
   server.on ("/favicon.ico",  []() { Serial.println("favicon.ico"); server.send ( 200, "text/html", "" );   }  );
   server.on ("/admin.html",   []() { Serial.println("admin.html"); server.send ( 200, "text/html", PAGE_AdminMainPage );   }  );
   server.on ("/config.html",  send_network_configuration_html );
@@ -397,10 +384,7 @@ void setup () {
   tkSecond.attach(1,Second_Tick);
   UDPNTPClient.begin(2390);  // Port for NTP receive
 
-  messageString = "Mode Admin, SSID:'"+(String)ACCESS_POINT_NAME+"',password:'"+(String)ACCESS_POINT_PASSWORD+"' http://192.168.4.1";
-  Line[0].newMessageAvailable = true;
-  replaceVariable();
-
+  
   Serial.printf("Web server started, open %s in a web browser\n", WiFi.localIP().toString().c_str());
 
   // initialise le detecteur de prÃ©sence
@@ -408,6 +392,14 @@ void setup () {
 
   // Positionne en etat normal
   GlobalState = STATE_NORMAL;
+
+  // configure pour le scroll utilisé dans loop
+  for (uint8_t i=0; i<MAX_LINES; i++)
+  {
+    Line[i].P.begin();
+    Line[i].P.displaySuspend(false);
+    Line[i].P.displayScroll(Line[i].curMessage, PA_LEFT, scrollEffect, frameDelay);
+  } // fin FOR
 
 }  // end of setup
 
@@ -424,31 +416,40 @@ void loop () {
   {
     if (AdminTimeOutCounter > ADMIN_TIMEOUT)
     {
-       AdminEnabled = false;
-       Serial.println("Admin Mode disabled!");
-       WiFi.disconnect();
-       WiFi.softAPdisconnect(true);
-       WiFi.mode(WIFI_STA);
-       WiFi.begin((const char *)config.ssid.c_str(), (const char *)config.password.c_str());
-      //Serial.print("connection to: |");
-      //Serial.print(config.ssid);
+      AdminEnabled = false;
+      Serial.println("Admin Mode disabled!");
+      WiFi.disconnect();
+      WiFi.softAPdisconnect(true);
+      WiFi.mode(WIFI_STA);
+      WiFi.begin((const char *)config.ssid.c_str(), (const char *)config.password.c_str());
+      Serial.print("connection to: |");
+      Serial.print(config.ssid);
       //Serial.print("|  passwd: |");
       //Serial.print(config.password);
-      //Serial.println("|");
+      Serial.println("|");
 
+      // affiche le message d'attente de connexion
+      for (uint8_t i=0; i<MAX_LINES; i++){
+        //Line[i].P.begin();
+        Line[i].P.displaySuspend(false);
+        Line[i].P.displayText("wifi cnx ...", PA_CENTER ,0, 0, PA_PRINT, PA_NO_EFFECT);
+      } // fin FOR
+      updateDisplay(); delay(200);updateDisplay();
+      
       while ( (WiFi.status() != WL_CONNECTED)  && (WifiConnectTimeOut > 0 ) ){
         delay(500);
         Serial.print(".");
         WifiConnectTimeOut--;
       }
 
+  
       if (WifiConnectTimeOut != 0) {
         Serial.println("");
         Serial.println("WiFi connected");
         Serial.println("IP address: ");
         Serial.println(WiFi.localIP());
+      
         messageString = "http://"+WiFi.localIP().toString() +", Bonjour nous somme le <jj/mm/aa> <hh:mm:ss>";
-  
         Line[0].newMessageAvailable = true;
         // Met a jour l'horloge tout de suite 
         NTPRefresh();
@@ -459,12 +460,23 @@ void loop () {
         WifiConnectTimeOut = WIFI_CONNECTION_TIMEOUT_DEFAULT;
         Serial.println("");
         Serial.println("Impossible de se connectÃ© au wifi, retour en mode Admin");
-        ConfigureWifi();
-      }
-      
+        ConfigureWifiAPMode();
+        messageString = "Mode Admin, SSID:'"+(String)ACCESS_POINT_NAME+"',password:'"+(String)ACCESS_POINT_PASSWORD+"' http://192.168.4.1";
+        Line[0].newMessageAvailable = true;
+     }
 
+     // configure pour le scroll utilisé dans loop
+     for (uint8_t i=0; i<MAX_LINES; i++) {
+        Line[i].P.begin();
+        Line[i].P.displaySuspend(false);
+        Line[i].P.displayReset(); 
+        Line[i].P.displayScroll(Line[i].curMessage, PA_LEFT, scrollEffect, frameDelay);
+     } // fin FOR
+
+    updateDisplay();
     } // FIN if AdminTimeOutCounter > ADMIN_TIMEOUT
   } // fin IF  AdminEnable
+  
   if (config.Update_Time_Via_NTP_Every  > 0 )  {
     if (cNTP_Update > 5 && firstStart)    {
       NTPRefresh();
@@ -495,11 +507,14 @@ void loop () {
   }
 
   if (GlobalState == STATE_NORMAL) {
-    if (UnixTimestamp % 60 == 0) {
+    if (UnixTimestamp - LastReplaceVariableTimestamp >= 7) {
+      //Serial.print("loop UnixTimeStamp > 7 : ");
+      //Serial.println(UnixTimestamp);
+      LastReplaceVariableTimestamp = UnixTimestamp;
       replaceVariable();
     }
     // update display if time is up
-      updateDisplay ();
+   updateDisplay ();
       
   }
 
@@ -522,8 +537,7 @@ void loop () {
     }
   } //fin else presenceVAL
 
-  // permet d'afficher la bonne heure en continue
-  // do other stuff here
+  // gestion des evenement HTTP
   server.handleClient();
 
 

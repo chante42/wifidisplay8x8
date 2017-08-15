@@ -21,7 +21,7 @@ const char PAGE_Message[] PROGMEM = R"=====(
 
       <div id='title'>Message</div>
       <hr>
-      <form action='submit' method='GET'>
+      <form action='messageSubmit' method='GET'>
         <p><div class="infoBulle" href="">Message à  afficher:
            <span><h3>les variables spéciales</h3>
             <p>&lsaquo;jj/mm/aa&rsaquo; : Affiche la date courante selon le format de la balise</p>
@@ -37,9 +37,12 @@ const char PAGE_Message[] PROGMEM = R"=====(
           <option value="240">tortue</option>
           <option value="120">très lent</option>
           <option value="60">lent</option>
-          <option value="30">normal</option>
-          <option value="0">très vite</option>
+          <option value="25">normal</option>
           <option value="15">vite</option>          
+          <option value="13">très vite</option>          
+          <option value="10">extrème</option>          
+          <option value="5">illisible</option>
+          
         </select></p>
 
         <p>Luminositée :
@@ -113,19 +116,5 @@ const char PAGE_Message[] PROGMEM = R"=====(
 
 
 
-void processExample()
-{        
-    if (server.args() > 0 )  // Are there any POST/GET Fields ? 
-    {
-       for ( uint8_t i = 0; i < server.args(); i++ ) {  // Iterate through the fields
-            if (server.argName(i) == "firstname") 
-            {
-                 // Your processing for the transmitted form-variable 
-                 String fName = server.arg(i);
-            }
-        }
-    }
-    server.send ( 200, "text/html", ""  ); 
-}
 
 

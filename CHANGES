@@ -1,3 +1,16 @@
+* 2017/08/15
+  - correction BUG 08131 
+  - correction BUG 08132
+  - Si config existe essaye de se connecté en 1er au wifi sauvegardé
+  - Affichage de message d'attente quand il tente de se connecter au wifi
+  - Mise en place de valeur de vitesse plus cohérente, et initialisation de la page message ok pour la vitesse.
+  - EVOL 081501 : Gestion du message par défaut avec un bouton ou selon l'édition du premier caractere pour efface le message ou editer, a voir sur un site web 
+
+* 2017/08/13
+  - Simplification du code sur la gestion des message initiaux.
+  - BUG 08131 : Le message initial ne s'affiche pas avant la connection au wifi si celui ci est le bon
+  - BUG 08132 : Impossible de se connecter en HTTP au module !!!!!
+  
 * 2017/06/11
  - LE bug A2 est corrigé, mais j'ai pas compris
  - http://a.b.c.d redirige soit sur admin.html en mode admin ou message.html dans l'autre cas.
